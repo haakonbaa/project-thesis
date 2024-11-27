@@ -1,0 +1,28 @@
+\usepackage[utf8]{inputenc}            % For UTF-8 encoding
+\usepackage{lmodern}                   % Modern fonts
+\usepackage{geometry}                  % Page layout
+\usepackage{hyperref}                  % Hyperlinks
+\usepackage{graphicx}                  % For including images
+\usepackage{amsmath}                   % Math symbols and environments
+\usepackage{bm}                        % Bold math symbols
+\usepackage{fancyhdr}                  % Custom headers and footers
+\usepackage[inkscapelatex=false]{svg}  % For including SVG images
+\usepackage{titlesec}                  % Custom section titles (Huge ones :)
+\usepackage[style=ieee]{biblatex}      % IEEE citation style
+
+% Include the bibliography file (biblatex)
+\addbibresource{refs.bib}
+
+% Set the output directory for converted files (svg)
+\svgsetup{
+    inkscapepath=../build/,
+}
+% Place numbers on the bottom of the page (fancyhdr)
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt} % Remove the horizontal line in the header
+
+% Huge section titles (titlesec)
+\titleformat{\chapter}[block]{\Huge\bfseries}{\thesection}{1em}{}
+\titleformat{\section}[block]{\huge\bfseries}{\thesection}{1em}{}

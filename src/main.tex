@@ -1,0 +1,86 @@
+\documentclass[10pt,b5paper,openright]{book}
+\usepackage{packages}
+
+\begin{document}
+
+% Set margins for the title page
+\newgeometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+% Title page
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+        \huge{\textbf{Task Priority Control of Underwater Vehicle Manipulator Systems}}
+        \vspace{2cm}
+
+        \Large{Håkon Bårsaune}
+        \vspace{2cm}
+
+        \large{
+            Supervisor: Professor Kristin Ytterstad Pettersen \\
+            Co-supervisors: Markus Høgevoll Iversflaten, \\
+            Bjørn Kåre Sæbø %TODO: add title?
+        }
+
+        \vspace{2cm}
+        \today
+        \vfill
+        \begin{figure}[htbp]
+            \centering
+            \includesvg[width=0.8\linewidth]{assets/NTNU.svg}
+        \end{figure}
+    \end{center}
+\end{titlepage}
+
+\clearpage
+% Restore margins
+\restoregeometry 
+
+% Roman numbering for the front matter
+\pagenumbering{roman} 
+
+\section*{Problem Description}
+\addcontentsline{toc}{chapter}{Problem Description}
+
+As mentioned in \cite{nakamura1987}
+\newpage
+
+\section*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\newpage
+
+\section*{Sammendrag}
+\addcontentsline{toc}{chapter}{Sammendrag}
+\newpage
+
+\section*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+\newpage
+
+
+\tableofcontents
+\newpage
+
+\begingroup
+\let\cleardoublepage\relax
+\let\clearpage\relax
+\listoffigures
+\newpage
+\listoftables
+\endgroup
+
+\pagenumbering{arabic} % Arabic numbering for the main matter
+
+\chapter{Introduction}
+\chapter{Background and Preliminaries}
+\chapter{Modelling}
+\chapter{Control}
+\chapter{Simulation}
+\chapter{Conclusion and Future Work}
+
+\printbibliography
+\newpage
+\appendix
+
+\chapter{Appendix}
+
+\end{document}
