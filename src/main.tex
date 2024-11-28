@@ -38,28 +38,36 @@
 % Roman numbering for the front matter
 \pagenumbering{roman} 
 
-\section*{Problem Description}
+\section*{\Huge{Problem Description}}
 \addcontentsline{toc}{chapter}{Problem Description}
-
-As mentioned in \cite{nakamura1987}
+\input{./chapters/problem_description}
 \newpage
 
-\section*{Abstract}
+\section*{\Huge{Abstract}}
 \addcontentsline{toc}{chapter}{Abstract}
+\input{./chapters/abstract}
 \newpage
 
-\section*{Sammendrag}
+\section*{\Huge{Sammendrag}}
 \addcontentsline{toc}{chapter}{Sammendrag}
+\input{./chapters/sammendrag}
 \newpage
 
-\section*{Preface}
+\section*{\Huge{Preface}}
 \addcontentsline{toc}{chapter}{Preface}
+\input{./chapters/preface}
+\DTMlangsetup{showdayofmonth=false}
+\begin{flushright}
+    \textit{Håkon Bårsaune} \\
+    \textit{Trondheim,\today}
+\end{flushright}
+\DTMlangsetup{showdayofmonth=true}
 \newpage
-
 
 \tableofcontents
 \newpage
 
+% List of figures and tables, they don't need take two pages each
 \begingroup
 \let\cleardoublepage\relax
 \let\clearpage\relax
@@ -68,19 +76,28 @@ As mentioned in \cite{nakamura1987}
 \listoftables
 \endgroup
 
-\pagenumbering{arabic} % Arabic numbering for the main matter
 
 \chapter{Introduction}
-\chapter{Background and Preliminaries}
-\chapter{Modelling}
-\chapter{Control}
-\chapter{Simulation}
-\chapter{Conclusion and Future Work}
+\pagenumbering{arabic} % Arabic numbering for the main matter
+% Change the page style to include the chapter number and title in the header
+\fancyhead[RE]{\thepage}
+\fancyhead[LE]{\MakeUppercase{\rightmark}}
+\fancyhead[LO]{\thepage}
+\fancyhead[RO]{\MakeUppercase{\leftmark}}
+\fancyfoot[C]{}
+
+\input{./chapters/introduction}
+\input{./chapters/background_and_preliminaries}
+\input{./chapters/modelling}
+\input{./chapters/task_priority_control}
+\input{./chapters/simulation}
+\input{./chapters/conclusion_and_future_work}
 
 \printbibliography
+\addcontentsline{toc}{chapter}{Bibliography}
 \newpage
 \appendix
 
-\chapter{Appendix}
+%\chapter{Appendix}
 
 \end{document}

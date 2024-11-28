@@ -1,7 +1,7 @@
 \usepackage[utf8]{inputenc}            % For UTF-8 encoding
 \usepackage{lmodern}                   % Modern fonts
 \usepackage{geometry}                  % Page layout
-\usepackage{hyperref}                  % Hyperlinks
+\usepackage[pdftex]{hyperref}          % For hyperlinks
 \usepackage{graphicx}                  % For including images
 \usepackage{amsmath}                   % Math symbols and environments
 \usepackage{bm}                        % Bold math symbols
@@ -9,6 +9,26 @@
 \usepackage[inkscapelatex=false]{svg}  % For including SVG images
 \usepackage{titlesec}                  % Custom section titles (Huge ones :)
 \usepackage[style=ieee]{biblatex}      % IEEE citation style
+\usepackage{setspace}
+\usepackage[en-US]{datetime2}
+
+\hypersetup{
+    % Sets the displayed title
+    pdftitle={Task Priority Control of Underwater Vehicle Manipulator Systems},    
+    pdfauthor={Håkon Bårsaune},              % Sets the author
+    pdfsubject={Task Priority Control of},   % Sets the subject
+    pdfkeywords={LaTeX, Thesis}              % Sets keywords (optional)
+}
+
+% Format chapters to be displayed as "Chapter <number> - <title>" (titlesec)
+\titleformat{\chapter}[display]
+  {\normalfont\Huge\bfseries} % Format for "Introduction" (large and bold)
+  {\LARGE\textbf{Chapter \thechapter}} % Format for "Chapter 1" (slightly smaller)
+  {0pt} % Spacing between "Chapter 1" and "Introduction"
+  {\vspace{1ex}} % Vertical space before the title
+
+% Set spacing between lines (setspace)
+\setstretch{1.2}
 
 % Include the bibliography file (biblatex)
 \addbibresource{refs.bib}
@@ -24,5 +44,5 @@
 \renewcommand{\headrulewidth}{0pt} % Remove the horizontal line in the header
 
 % Huge section titles (titlesec)
-\titleformat{\chapter}[block]{\Huge\bfseries}{\thesection}{1em}{}
-\titleformat{\section}[block]{\huge\bfseries}{\thesection}{1em}{}
+%\titleformat{\chapter}[block]{\Huge\bfseries}{\thesection}{1em}{}
+%\titleformat{\section}[block]{\huge\bfseries}{\thesection}{1em}{}

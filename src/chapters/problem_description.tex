@@ -1,0 +1,46 @@
+The project considers nonlinear control methods for lightweight underwater vehicle-manipulator
+systems (light-UVMSs) including both remotely operated vehicles (ROVs) with a lightweight
+base, and articulated intervention-AUVs (AIAUVs) (e.g. underwater snake robots) which are
+lightweight and with no separate base. Lightweight UVMSs are increasingly taken into use in
+several industries, including harbor control and environmental monitoring.
+
+Light-UVMSs reveal a control challenge which has so far has been neglected: to efficiently
+control a light-UVMS one should consider the coupling effects between its base and arm
+motions. When the arm moves, this will make the base move as well, and vice versa. This
+coupling is not so clear for large work-class ROVs where the motion of the heavy base can be
+assumed almost decoupled from the motion of the arm. The coupling effects appear partly due
+to both reaction forces and hydrostatic forces.
+
+Since UVMSs possess both thrusters and a manipulator arm, these vehicles are considered
+kinematically redundant. This makes them very suitable for task-priority control methods. These
+methods can be divided into two main groups: velocity- and acceleration-level task-priority
+control. Velocity-level control does not explicitly consider all the coupling effects between the
+manipulator and the base motions, whereas acceleration-level control does. However, one must
+have a sufficiently accurate mathematical model of the UVMS to correctly apply acceleration-
+level control. Currently there is a lack of research that compares these methods for underwater
+vehicles, especially related to experimental validation.
+
+The task of this assignment is to compare and implement several task-priority control
+approaches for light-UVMS and compare their behaviour both theoretically and in simulation.
+The main focus should be a comparison between control approaches applied at the velocity and
+acceleration levels. The simulation study should be designed to facilitate physical experiments
+to validate the findings. NTNU has, through
+the AURLab, several vehicles (Eelume, BlueROV, etc.) fit for such experiments.
+\newpage
+\begin{enumerate}
+\item Do a literature survey on task-priority control for underwater vehicle manipulator
+systems (UVMS), describe the state-of-the-art, with a focus on works with experimental
+results.
+\item Write a theoretical comparison of various task-priority methods and their application to
+UVMS.
+\item Do a simulation study comparing velocity and acceleration level task-priority control
+methods for light-UVMS.
+\end{enumerate}
+The report shall be written in English and edited as a research report including Abstract,
+Introduction with motivation, literature survey, contributions of the project work, and the outline
+of the report. This is followed by the chapters describing the results of the project work,
+simulation results and corresponding discussion, and a conclusion including a proposal for
+further work. Source code should be provided in a .zip-file uploaded as an attachment, and with
+with code listing enclosed in an appendix in the report. It is supposed that Department of
+Engineering Cybernetics, NTNU, can use the results freely in its research work, unless otherwise
+agreed upon, by referring to the student’s work.
