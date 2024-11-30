@@ -1,1 +1,123 @@
 \chapter{Background and Preliminaries}
+
+% -----------------------------------------------------------------------------
+\section{SO(3) and SE(3)}
+
+We denote by $\SO$ the special orthogonal group in three dimensions, which is
+the group of all $3 \times 3$ rotation matrices with determinant equal to one
+\begin{align}
+    \SO = \{ \bm{R} \in \mathbb{R}^{3 \times 3} \mid \bm{R}^T \bm{R} = \mathbb{I}, \det(\bm{R}) = 1 \}.
+\end{align}
+Intuitively, $R^T R = \mathbb{I}$ means that the columns of $R$ are orthonormal,
+and $\det(R) = 1$ means that $R$ is a proper rotation, i.e., it does not include
+a reflection. When specifying reference frames, we say that
+\begin{align}
+    \bm{p}^b = \bm{R}_{a}^b \bm{p}^a
+\end{align}
+meaning that the rotation matrix $\bm{R}_{a}^b$ rotates a vector from frame $a$
+to frame $b$. Some important properties of $\bm{R}_a^b \in \SO$ are as follows \cite{modsim}:
+\begin{itemize}
+\item $\bm{R}_a^b = (\bm{R}_b^a)^{-1} = (\bm{R}_b^a)^T$
+\item $\bm{R}_a^b \bm{R}_b^c = \bm{R}_a^c$
+\end{itemize}
+Rotations are often parameterized using Euler angles, quaternions, angle-axis or
+rodriquez parameters. In this thesis, euler angles are used for simplicity. A
+rotation matrix $\bm{R}$ can be represented by a rotation about the $x$-axis followed
+by rotations about the $y$- and $z$-axes respectively. The rotation matrix is then \cite{modsim}
+\begin{align}
+    \bm{R} = \bm{R}_z(\psi) \bm{R}_y(\theta) \bm{R}_x(\phi),
+\end{align}
+where
+\begin{subequations}
+\begin{align}
+    \bm{R}_x(\phi) &= \begin{pmatrix}
+        1 & 0 & 0 \\
+        0 & \cos(\phi) & -\sin(\phi) \\
+        0 & \sin(\phi) & \cos(\phi)
+    \end{pmatrix}, \\
+    \bm{R}_y(\theta) &= \begin{pmatrix}
+        \cos(\theta) & 0 & \sin(\theta) \\
+        0 & 1 & 0 \\
+        -\sin(\theta) & 0 & \cos(\theta)
+    \end{pmatrix}, \\
+    \bm{R}_z(\psi) &= \begin{pmatrix}
+        \cos(\psi) & -\sin(\psi) & 0 \\
+        \sin(\psi) & \cos(\psi) & 0 \\
+        0 & 0 & 1
+    \end{pmatrix}.
+\end{align}
+\end{subequations}
+A disadvantage of using Euler angles is the well known problem of gimbal lock.
+This occurs when two of the three axes align, causing the rotation matrix to lose
+a degree of freedom. When this happens the mass matrix of the system becomes singular
+and the system loses a degree of freedom. It is therefore impossible to determine
+the derivative of the Euler angles.
+
+{\color{red}
+Write more about
+\begin{itemize}
+    \item SE(3)
+    \item Quaternions
+    \item twist from euler angles and quaternions
+\end{itemize}
+}
+
+% -----------------------------------------------------------------------------
+\section{Pseudo-Inverse and Null Space Projection}
+
+For a given matrix $\bm{A} \in \mathbb{R}^{n\times m}$ we define the Moore-Penrose
+pseudo-inverse $\bm{A}^{+} \in \mathbb{R}^{m\times n}$ as the unique matrix
+satisfying the following four properties{\color{red}cite}:
+\begin{enumerate}
+\item $\bm{A}\bm{A}^{+}\bm{A} = \bm{A}$
+\item $\bm{A}^{+}\bm{A}\bm{A}^{+} = \bm{A}^{+}$
+\item $(\bm{A}\bm{A}^{+})^T = \bm{A}\bm{A}^{+}$
+\item $(\bm{A}^{+}\bm{A})^T = \bm{A}^{+}\bm{A}$
+\end{enumerate}
+It can be shown that for a full-column rank matrix $\bm{A}$, the pseudo-inverse is
+\begin{align}
+    \bm{A}^{+} = (\bm{A}^T \bm{A})^{-1} \bm{A}^T
+\end{align}
+and for a full-row rank matrix $\bm{A}$, the pseudo-inverse is
+\begin{align}
+    \bm{A}^{+} = \bm{A}^T (\bm{A} \bm{A}^T)^{-1}
+\end{align}
+In the general case, weather or not $\bm{A}$ is full rank, the pseudo-inverse can allways
+be computed using the singular value decomposition (SVD) of $\bm{A}$. The SVD of $\bm{A}$ is
+\begin{subequations}
+\begin{align}
+    \bm{A} &= \bm{U} \bm{\Sigma} \bm{V}^T \\
+    \bm{U} &\in \mathbb{R}^{n\times n} \textrm{ unitary} \\
+    \bm{V} &\in \mathbb{R}^{m\times m} \textrm{ unitary} \\
+    \bm{\Sigma} &= \operatorname{diag}(\sigma_1, \sigma_2, \ldots, \sigma_r, 0, \ldots, 0) \in \mathbb{R}^{n\times m} \\
+    \sigma_1 &\geq \sigma_2 \geq \ldots \geq \sigma_r > 0 \\
+    r &= \operatorname{rank}(\bm{A})
+\end{align}
+\end{subequations}
+Where a matrix $U$ is unitry iff $U^T U = U U^T = \mathbb{I}$. The pseudo-inverse
+of $\bm{A}$ can then be computed as
+\begin{subequations}
+\begin{align}
+    \bm{A}^{+} &= \bm{V} \bm{\Sigma}^{+} \bm{U}^T \\
+    \bm{\Sigma}^{+} &:= \operatorname{diag}(\sigma_1^{-1}, \sigma_2^{-1}, \ldots, \sigma_r^{-1}, 0, \ldots, 0)
+\end{align}
+\end{subequations}
+
+The singular value
+decompositoin will be important when dealing with singularity robust task priority
+control later on in this thesis.
+
+Consider the optimization problem
+\begin{align}
+    \min_{\bm{x} \in \mathbb{R}^m} || \bm{A} \bm{x} - \bm{b} ||
+\end{align}
+The solutoin to this problem is given by
+\begin{align}
+    \bm{x} = \bm{A}^{+} \bm{b} + (\mathbb{I} - \bm{A}^{+} \bm{A}) \bm{z}
+\end{align}
+where $\bm{z} \in \mathbb{R}^m$ is an arbitrary vector. The term $(\mathbb{I} - \bm{A}^{+} \bm{A}) \bm{z}$
+is the null space projection of $\bm{z}$ onto the null space of $\bm{A}$. Parts
+of this fact can bee seen by noting that
+\begin{align}
+    \bm{A}\left(\mathbb{I} - \bm{A}^{+} \bm{A}\right) = \bm{A} - \bm{A} = 0
+\end{align}

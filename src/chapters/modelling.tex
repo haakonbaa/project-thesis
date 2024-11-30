@@ -1,1 +1,118 @@
 \chapter{Modelling}
+
+\section{Rigid Body Kinetics}
+
+Consider a rigid body with mass $m$. Denote by $\bm{v}_{ng}^b$ the translational
+velocity, and by $\bm{\omega}_{ng}^b$ the angular velocity of the body in the
+body-fixed frame. We can find the kinetic energy of the body by integrating the
+kinetic energy of every infinitesimal mass element of the body.
+\begin{equation}
+    T = \frac{1}{2} \int \bm{v}_m^T \bm{v}_m\, dm
+\end{equation}
+Where $\bm{v}_m$ is the velocity of the mass element. Noting that
+\begin{align}
+    \bm{v}_m &= \bm{v}_{ng}^b + \bm{\omega}_{ng}^b \times \bm{r}_m
+\end{align}
+where $\bm{r}_m$ is the position of the mass element relative to the center of
+mass. By defining $\bm{\nu} = \begin{pmatrix}(\bm{v}_{ng}^b)^T & (\bm{\omega}_{ng}^b)^T \end{pmatrix}^T$ The kinetic energy can be written as
+\begin{align}
+    T = \frac{1}{2} \bm{\nu}^T
+    \begin{pmatrix}
+        \bm{I}_{3\times 3} \int \,dm & - \int [\bm{r}_m]_\times \,dm \\
+        - \int [\bm{r}_m]_\times \,dm & -\int [\bm{r}_m]_\times [\bm{r}_m]_\times \,dm
+    \end{pmatrix}
+    \bm{\nu}
+\end{align}
+Since the twist is defined in the center of gravity,
+\begin{align}
+    \int [\bm{r}_m]_{\times} \,dm &= \bm{0}
+\end{align}
+by definition of the center of mass. The bottom right block is recognized as the
+definition of the inertia matrix $\bm{I_g^b}$. The kinetic energy can then be
+expressed as
+\begin{align}
+    T = \frac{1}{2} \bm{\nu}^T \begin{pmatrix} m\bm{I}_{3\times 3} & \bm{0} \\ \bm{0} & \bm{I}_g^b \end{pmatrix} \bm{\nu}
+\end{align}
+Using lagrange's method, begin careful when differentiating in a rotating frame,
+we can find the equations of motion for the rigid body as \cite{fossen2021}:
+\begin{align}
+    \begin{pmatrix}
+        m \bm{I}_{3\times 3} & \bm{0} \\
+        \bm{0} & \bm{I}_g^b
+    \end{pmatrix} \dot{\bm{\nu}}
+    +
+    \begin{pmatrix}
+        m [\bm{\omega}_{nb}^b]_{\times} & \bm{0} \\
+        \bm{0} & -[\bm{I}_g^b \bm{\omega}_{nb}^b]_{\times}
+    \end{pmatrix} \bm{\nu} = \bm{\tau}
+\end{align}
+where $\bm{\tau}$ is the generalized forces acting on the body. We call the matrices
+pre-multiplying $\dot{\bm{\nu}}$ and $\bm{\nu}$ for $\bm{M}_{RB}^{CG}$ and $\bm{C}_{RB}^{CG}$ respectively.
+
+
+
+\subsection{Hydrodynamics}
+
+When a rigid body accelerates in a fluid, the fluid is accellerated as well. 
+This contributes to the total kinetic energy of the system \cite{antonelli2018}.
+To compensate for these effects, the spatial inertia matrix of the rigid body
+can be augmented to approxiate the total kinetic energy of the system. 
+\begin{equation}
+    \bm{M} = \bm{M}_{RB} + \bm{M}_{A}
+\end{equation}
+The matrix $\bm{M}_A$ is in reality a function of the wave exitaction frequency
+of the waves in the ocean \cite{fossen2021}. Because of the complex computations
+of $\bm{M}_A(\omega)$, as well as the fact that for large vessels the natural
+frequencies of the vessel are much lower than the wave exitaction frequencies,
+the added mass matrix is approximated as the zero-frequency added mass matrix
+\begin{align}
+    \bm{M}_A(\omega) &\approx \bm{M}_A(0)
+\end{align}
+Under this assumption, the fluikinetic energy of the fluid $T_A$ is approximated
+as
+\begin{align}
+    T_a &= \frac{1}{2}\bm{\nu}^T\bm{M}_A\bm{\nu} & \dot{\bm{M}_A} &= \bm{0}
+\end{align}
+where $\bm{\nu}$ is the twist velocity of the rigid body. For underwater 
+vehicles at low speed where the the shape has three planes of symmetry, the
+added mass matrix can be approximated as \cite{fossen2021}:
+\begin{align}
+    \bm{M}_A = \bm{M}_A^T =
+    \operatorname{diag}(X_{\dot{u}}, Y_{\dot{v}}, Z_{\dot{w}},
+        K_{\dot{p}}, M_{\dot{q}}, N_{\dot{r}})
+\end{align}
+According to \cite{fossen2021} this approximation is found to be quite good for
+many applications due to the fact that the off diagonal coupling terms are small
+compared to the diagonal terms.
+
+By applying srip theory the added mass matrix for a cylindirical rigid body of
+mass $m$, lenght along the x-axis $l$ and radius $r$ can be derived as \cite{antonelli2018}:
+\begin{align}
+ X_{\dot{u}} &= -0.1 m &
+ Y_{\dot{v}} &= -\pi \rho r^2 l \nonumber \\
+ Z_{\dot{w}} &= -\pi \rho r^2 l &
+ K_{\dot{p}} &= 0 \\
+ M_{\dot{q}} &= -\frac{1}{12} \pi \rho r^2 l^3 &
+ N_{\dot{r}} &= -\frac{1}{12} \pi \rho r^2 l^3 \nonumber
+\end{align}
+where $\rho$ is the density of the fluid. For a three-dimensional ellipsoid with
+lengths $a$, $b$ and $c$ along the x, y and z axis respectively, the added mass
+can be approximated as \cite{fossen2021}:
+\begin{align}
+ X_{\dot{u}} &= -\frac{\alpha_0}{2-\alpha_0}m &
+ Y_{\dot{v}} &= -\frac{\beta_0}{2-\beta_0}m \nonumber \\
+ Z_{\dot{w}} &= Y_{\dot{v}}&
+ K_{\dot{p}} &= 0 \\
+ M_{\dot{q}} &= -\frac{1}{5}\frac{(b^2-a^2)^2(\alpha_0-\beta_0)}{2(b^2-a^2) + (b^2+a^2)(\beta_0-\alpha_0)}m&
+ N_{\dot{r}} &= M_{\dot{q}} \nonumber
+\end{align}
+
+\section{Lagrange formulation}
+
+A commonly used mathematical description of the system when implementing task-
+priority control is:
+\begin{align}
+    \bm{M}(\bm{q})\ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}})\dot{\bm{q}} + \bm{D}(\bm{q}, \dot{\bm{q}})\dot{\bm{q}} + \bm{G}(\bm{q}) = \bm{\tau}
+\end{align}
+
+
