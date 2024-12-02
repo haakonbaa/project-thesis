@@ -1,1 +1,271 @@
 \chapter{Task Priority Control}
+
+This chapter explores various methods for task priority control, beginning with
+an introduction to its fundamental concepts and a presentation of one of the
+earliest and most straightforward techniques. It then continues into more advanced
+approaches and concludes with a discussion of key implementation considerations,
+including singularity robustness, for real-world robotic applications.
+
+{
+    \color{red}
+    \begin{enumerate}
+        \item Task variable as a gradient of an obtimization objective.
+        \item force-level? dynamic-level?
+        \item The method presented above is not "optimal"
+    \end{enumerate}
+}
+% -----------------------------------------------------------------------------
+\section{Introduction}
+\label{sec:tpc_intro}
+Task priority control addresses the problem of managing multiple objectives simultaneously.
+Each task is assigned a specific priority level, and the goal is to prioritize the higher-level
+tasks my minimizing its error while balancing the lower-priority objectives. The
+following sections are based largely on the work of \cite{antonelli2009}, which provides
+an excellent overview of the topic in terms of velocity level control. The concepts
+regarding velocity-, acceleration and force-level control are to be defined in the
+following sections.
+
+A task variable $\bm{\sigma}(t) \in \mathbb{R}^m$ is defined as a function of the robot's
+joint variables $\bm{q}(t) \in \mathbb{R}^n$.
+\begin{align}
+    \bm{\sigma}(t) = \bm{f}(\bm{q}(t)) \label{eq:def_task}
+\end{align}
+A task can then be defined as the objective of keeping the task variable $\bm{\sigma}(t)$
+close to a desired value $\bm{\sigma}_d(t) \in \mathbb{R}^m$. For instance, a task could
+be the end-effector position of a robot manipulator or the orientation of a camera mounted
+on a robot. By differentiating \autoref{eq:def_task} with respect to time, the task velocity
+can be defined as
+\begin{align}
+    \dot{\bm{\sigma}}(t) = \frac{\partial \bm{f}(\bm{q}(t))}{\partial \bm{q}} \dot{\bm{q}}(t)= \bm{J}(\bm{q}(t)) \dot{\bm{q}}(t) \label{eq:def_task_jacobian}
+\end{align}
+
+The matrix $\bm{J}(\bm{q}(t)) \in \mathbb{R}^{m \times n}$ is called the
+\emph{task Jacobian}, or simply the \emph{Jacobian}, and maps the joint
+velocities $\dot{\bm{q}}(t)$ to the task velocity $\dot{\bm{\sigma}}(t)$.
+The Jacobian is a function of the robot's joint variables $\bm{q}(t)$.
+In the case where only one task is considered, one can use the pseudoinverse
+to compute the minimum norm joint velocities that will achieve the desired
+task velocity. The joint velocities are then given by
+\begin{align}
+    \dot{\bm{q}}_d(t) = \bm{J}^{+}(\bm{q}(t)) \dot{\bm{\sigma}}_d(t) \label{eq:task_priority}
+\end{align}
+where $\bm{J}^{+}(\bm{q}(t))$ is the pseudoinverse of the Jacobian at the current
+joint configuration $\bm{q}(t)$. From now on the dependencies of $\bm{J}$, $\bm{q}$
+and $\bm{\sigma}$ will be omitted for brevity.
+
+In practice the jacobian might not represent the true kinematics of the robot.
+Furthermore, depending on the task, the desired task velocity might not be feasible,
+and there might be model errors and noise in the estimated joint velocities making
+the joint velocities not equal to the desired joint velocities. Because of this,
+a feedack controller is needed to ensure that the desired task velocity is
+achieved. Substituting the desired task velocity $\dot{\bm{\sigma}}_d(t)$ in 
+\autoref{eq:task_priority} with
+a feedforward term and a feedback term, the joint velocities can be computed as
+\begin{align}
+    \dot{\bm{q}}_d = \bm{J}^{+} \left(\dot{\bm{\sigma}}_d + \bm{\Lambda}\tilde{\bm{\sigma}}\right)
+\end{align}
+{
+    \color{red} have seen controllers on the form $\bm{J}^{+} \dot{\bm{\sigma}}_d + \bm{K}\tilde{\bm{\sigma}}$.
+}
+Where $\tilde{\bm{\sigma}} = \bm{\sigma} - \bm{\sigma}_d$ is the error in the
+task and the constant matrix $\bm{\Lambda}$ is a matrix that determines the
+feedback gains.
+Generalizing this to multiple tasks, we note that \autoref{eq:def_task_jacobian}
+has a more general solution than \autoref{eq:task_priority} when $n > m$:
+\begin{align}
+    \dot{\bm{q}}_d = \bm{J}^{+} \dot{\bm{\sigma}}_d + (\mathbb{I} - \bm{J}^{+} \bm{J}) \bm{z}
+\end{align}
+for some arbitrary vector $\bm{z} \in \mathbb{R}^n$. The term
+$(\mathbb{I}_n - \bm{J}^{+} \bm{J}) \bm{z}$ is recognized as the null space projection
+of $\bm{z}$ onto the null space of the Jacobian matrix $\bm{J}$. By setting
+$\bm{z}$ to some desired value, such as the joint velocities of a lower-priority task,
+one can achieve prioritization of tasks. To present the basic idea, consider the
+tasks
+\begin{subequations}
+\begin{align}
+    \bm{\sigma}_i &= \bm{f}_i(\bm{q}) \in \mathbb{R}^{m_i} &i &= 1, 2, \ldots, k \\
+    \dot{\bm{\sigma}}_i &= \bm{J}_i(\bm{q}) \dot{\bm{q}} \in \mathbb{R}^{m_i} &i &= 1, 2, \ldots, k
+\end{align}
+\end{subequations}
+with corresponding desired tasks
+\begin{align}
+    \dot{\bm{\sigma}}_{i,d}(t) \quad i = 1, 2, \ldots, k
+\end{align}
+Let $\bm{N}_i = \mathbb{I}_n - \bm{J}_i^{+} \bm{J}_i$ be the null space projection
+matrix onto the null space of the Jacobian $\bm{J}_i$.
+The desired joint velocities are then given by
+\begin{align}
+    \dot{\bm{q}}_d = \sum_{i=1}^k \bm{N}_i^{\#}\bm{J}_i^{\#} \left(\dot{\bm{\sigma}}_{i,d} + \bm{\Lambda}_i \tilde{\bm{\sigma}}_i\right) \label{eq:task_priority_vel}
+\end{align}
+comparing this to the single task case, $\bm{N}_i^{\#}$ is the null space projection matrix
+projecting a task onto the null space of all the higher-priority tasks.
+\begin{align}
+    \bm{N}_i^{\#} = \bm{N}_1 \bm{N}_2 \cdots \bm{N}_{i-1}
+\end{align}
+and the $\bm{J}_i^{\#}$ matrix is the projection matrix projecting a task onto the
+subspace spanned by the task Jacobian.
+\begin{align}
+    \bm{J}_i^{\#} = \bm{J}_i^+
+\end{align}
+In general, several slightly different task priority control frameworks have
+been proposed, following the same basic form as \autoref{eq:task_priority_vel}.
+Although, slight variations in the form of the null space projection matrices
+and the pseudoinverse matrices have been proposed. The methods include substituting
+the pseudoinverse with the transpose of the Jacobian, and using augmented null space
+projections.
+\begin{subequations}
+\begin{align}
+    \bm{N}_i^{\#} := \bm{N}_{1\cdots i-1} := \mathbb{I} - \bm{J}_{1\cdots i-1}^+ \bm{J}_{1\cdots i-1} \\
+    \bm{J}_{1\cdots i-1} := \begin{bmatrix}
+        J_1 \\
+        J_2 \\
+        \vdots \\
+        J_{i-1}
+    \end{bmatrix}
+\end{align}
+\end{subequations}
+This gives rise to several different variants of the task priority control algorithm.
+The variants discussed in \cite{antonelli2009} are summarized in the following table:
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        $J^{\#}$ & $N^{\#}$ & Algorithm's name \\
+        \hline
+        $\bm{J}^+$ & $\bm{N}_1 \bm{N}_2 \cdots \bm{N}_{i-1}$ & successive inverse-based projections \\
+        $\bm{J}^+$ & $\bm{N}_{1\cdots i-1}$ & augmented inverse-based projections \\
+        $\bm{J}^T$ & $\bm{N}_1 \bm{N}_2 \cdots \bm{N}_{i-1}$ & successive transpose-based projections \\
+        $\bm{J}^T$ & $\bm{N}_{1\cdots i-1}$ & augmented transpose-based projections \\
+        \hline
+    \end{tabular}
+    \label{tab:tpc_variants}
+    \caption{Task priority control variants. Table from \cite{antonelli2009}}
+\end{table}
+
+
+% -----------------------------------------------------------------------------
+\subsection{Acceleration-level control}
+
+
+\subsection{Implementation details}
+
+In \autoref{sec:tpc_intro}, one of the assumptions was that a controller exists
+that can generate the desired joint velocities $\dot{\bm{q}}(t)$. Using a
+mathematical model of the robot on the form
+\begin{align}
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{G}(\bm{q}) = \bm{\tau}
+\end{align}
+one can set the desired joint acceleration by formulating the input generalized
+torques $\bm{\tau}$ as
+\begin{align}
+    \bm{\tau} = \bar{\bm{M}}(\bm{q}) \ddot{\bm{q}}_d + \bar{\bm{C}}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bar{\bm{G}}(\bm{q}) \label{eq:torque_feedback_lin}
+\end{align}
+where $\bar{\bm{M}}(\bm{q})$, $\bar{\bm{C}}(\bm{q}, \dot{\bm{q}})$ and
+$\bar{\bm{G}}(\bm{q})$ are approximations of the robot's mass matrix, Coriolis
+and centripetal forces (and damping), and gravity vector, respectively. Assuming
+that the approximations are exact, and that the torque is feasible, one can easily
+see that the desired joint acceleration is given by:
+\begin{subequations}
+\begin{align}
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{G}(\bm{q}) &= 
+    \bar{\bm{M}}(\bm{q}) \ddot{\bm{q}}_d + \bar{\bm{C}}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bar{\bm{G}}(\bm{q}) \\
+    \implies \bm{M}(\bm{q}) \ddot{\bm{q}} &= \bm{M}(\bm{q}) \ddot{\bm{q}}_d
+\end{align}
+\end{subequations}
+Since the mass matrix is positive definite, there is an equivalence between the
+desired joint acceleration and the actual joint acceleration. In practice
+however, the approximations are not exact, and the torque might not be feasible,
+furthermore, the estimated joint velocities and accelerations might be noisy.
+This is however a well studied problem, and there are several methods for
+dealing with this. Among the most common and simplest methods are feedback control
+with PID controllers. Substituting $\ddot{\bm{q}}$ in \autoref{eq:torque_feedback_lin}
+by a simple PD controller, one can get a simple feedback controller:
+{
+    \color{red}
+    \begin{itemize}
+        \item is this even relevant? Are controllers on this level used in practice?
+            Won't the controller on the task level take care of this?
+    \end{itemize}
+}
+
+
+% -----------------------------------------------------------------------------
+\section{Dynamic level control}
+
+% -----------------------------------------------------------------------------
+\section{Singularity Robustness}
+
+Considerations have to be taken into account when implementing the
+pseudoinverse numerically on a computer. One of the most important considerations is the singularity
+robustness of the algorithm. Although the pseudoinverse is defined for all matrices,
+when the matrix is close to being singular, the pseudoinverse can be very sensitive
+to small changes in the matrix. This might lead to very large input torques along
+allmost-singular directions. This problem is discussed extensively in \cite{chiaverini1997}.
+The following section will discuss the singularity robustness of the algorithm used in this
+thesis as proposed by \cite{chiaverini1997}.
+
+First, consider the problem of taking the pseudoinverse of an arbitrary matrix $\bm{J}$.
+As discussed in \autoref{sec:pseudoinverse}, the SVD of a matrix $\bm{J}$ can be
+written as
+\begin{align}
+    \bm{J} = \bm{U} \bm{\Sigma} \bm{V}^T
+\end{align}
+and the pseudoinverse of $J$ is
+\begin{align}
+    \bm{J}^+ = \bm{V} \bm{\Sigma}^+ \bm{U}^T
+\end{align}
+Rewriting the $\bm{U}$ and $\bm{V}$ matrices as
+\begin{subequations}
+\begin{align}
+    \bm{U} &= \begin{bmatrix} \bm{u}_1 & \bm{u}_2 & \cdots & \bm{u}_n \end{bmatrix} \\
+    \bm{V} &= \begin{bmatrix} \bm{v}_1 & \bm{v}_2 & \cdots & \bm{v}_m \end{bmatrix}
+\end{align}
+\end{subequations}
+where $\bm{u}_i$ and $\bm{v}_i$ are the columns of $\bm{U}$ and $\bm{V}$ respectively.
+$\bm{J}$ and its pseudoinverse can be written as
+\begin{subequations}
+\begin{align}
+    \bm{J} &= \sum_{i=1}^r \sigma_i \bm{u}_i \bm{v}_i^T \\
+    \bm{J}^+ &= \sum_{i=1}^r \frac{1}{\sigma_i} \bm{v}_i \bm{u}_i^T
+\end{align}
+\end{subequations}
+From this, it is clear that when $\sigma_i$ is close to zero, the pseudoinverse
+will be very sensitive to small changes in $\sigma_i$. One proposed solution to
+this problem is the so-called \emph{damped pseudoinverse} which is defined as
+\begin{align}
+    \bm{J}^* := \sum_{i=1}^r \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \bm{v}_i \bm{u}_i^T
+\end{align}
+We see that for large values of $\sigma_i$,
+\begin{align}
+    \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \approx \frac{1}{\sigma_i}
+\end{align}
+and for small values of $\sigma_i$,
+\begin{align}
+    \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \approx 0
+\end{align}
+This will make the pseudoinverse well-conditioned for all values of $\sigma_i$.
+The trado-off is that the damped pseudoinverse will not be the true pseudoinverse,
+this might lead to tasks with lower priority affecting the higher priority tasks and
+breaks some of the assumptions made when proving stability and task consistency.
+
+A way to make the pseudoinverse more accurate when far from singularities is to
+use the \emph{variable damped least-squares inverse} (VDLSI) proposed by \cite{chiaverini1997}.
+This uses the fact that there is no need to damp the pseudoinverse when far from singularities.
+The VDLSI is defined as
+\begin{subequations}
+\begin{align}
+    \bm{J}^{\circ} := \sum_{i=1}^r \frac{\sigma_i}{\sigma_i^2 + \lambda_i^2(\sigma_i)} \bm{v}_i \bm{u}_i^T \\
+    \lambda_i^2(\sigma_i) = \begin{cases}
+        0 & ,\sigma_i \geq \varepsilon \\
+        \left(1-\left(\frac{\sigma_i}{\varepsilon}\right)\right)\lambda_{max}^2 & ,\sigma_i < \varepsilon
+    \end{cases}
+\end{align}
+\end{subequations}
+where $\lambda_{max}^2$ and $\varepsilon$ are parameters that can be tuned. $\lambda_{max}$
+determines the maximum damping factor and $\varepsilon$ determines a threshold for when
+to start damping the pseudoinverse based on how close the singular values are to zero.
+
+{
+\color{red}
+Don't konw if i want to talk about the "Variable damped least squares inverse with low isotropic damping"
+}
