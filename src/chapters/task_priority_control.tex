@@ -223,7 +223,7 @@ where $\bar{\bm{M}}(\bm{q})$, $\bar{\bm{C}}(\bm{q}, \dot{\bm{q}})$ and
 $\bar{\bm{G}}(\bm{q})$ are approximations of the robot's mass matrix, Coriolis
 and centripetal forces (and damping), and gravity vector, respectively. Assuming
 that the approximations are exact, and that the torque is feasible, one can easily
-see that the desired joint acceleration is given by:
+see that the joint acceleration is given by:
 \begin{subequations}
 \begin{align}
     \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{G}(\bm{q}) &= 
@@ -237,7 +237,7 @@ however, the approximations are not exact, and the torque might not be feasible,
 furthermore, the estimated joint velocities and accelerations might be noisy.
 This is however a well studied problem, and there are several methods for
 dealing with this. Among the most common and simplest methods are feedback control
-with PID controllers. Substituting $\ddot{\bm{q}}$ in \autoref{eq:torque_feedback_lin}
+with PID controllers. Substituting $\ddot{\bm{q}}_d$ in \autoref{eq:torque_feedback_lin}
 by a simple PD controller, one can get a simple feedback controller:
 {
     \color{red}

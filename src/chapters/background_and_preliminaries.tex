@@ -1,7 +1,63 @@
 \chapter{Background and Preliminaries}
 
+The following chapter covers some of the mathematical background and preliminaries
+that will be used throughout this thesis. The chapter is divided into 4 sections.
+\hyperref[sec:bp:notation]{Section~\ref*{sec:bp:notation}} covers the notation used
+as well as some basic defintions. It is followed by \autoref{sec:bp:so3_se3} which
+covers the special orthogonal group in three dimensions $\SO$ and the special
+Euclidean group in three dimensions $\operatorname{SE}(3)$. \autoref{sec:pseudoinverse}
+
+% -----------------------------------------------------------------------------
+\section{Notation}
+\label{sec:bp:notation}
+
+The mathematical notation is primarily based on the notation used in \cite{modsim},
+\cite{fossen2021}, and \cite{sola2017}. We denote the skew-symmetric operator
+of a vector $\bm{v} \in \mathbb{R}^3$ as
+\begin{subequations}
+\begin{align}
+    [\cdot]_{\times} &: \mathbb{R}^3 \to \operatorname{so}(3) \subset \mathbb{R}^{3\times 3} \\
+    [\cdot]_{\times} &: \bm{v} \mapsto 
+    \begin{bmatrix}
+        0 & -v_3 & v_2 \\
+        v_3 & 0 & -v_1 \\
+        -v_2 & v_1 & 0
+    \end{bmatrix}
+\end{align}
+\end{subequations}
+where for any two vectors $\bm{u}, \bm{v} \in \mathbb{R}^3$
+\begin{align}
+    \bm{u} \times \bm{v} = [\bm{u}]_{\times} \bm{v}
+\end{align}
+We denote the operator that maps a twist vector to an element of the Lie algebra
+$\operatorname{se}(3)$ as
+\begin{subequations}
+\begin{align}
+    [\cdot]_{\wedge} &: \mathbb{R}^6 \to \operatorname{se}(3) \\
+    [\cdot]_{\wedge} &: \begin{pmatrix} \bm{v} \\ \bm{w} \end{pmatrix} \mapsto
+        \begin{bmatrix}
+            [\bm{w}]_{\times} & \bm{v} \\
+            \bm{0} & 0
+        \end{bmatrix}
+\end{align}
+\end{subequations}
+
+Adopting notation from \cite{fossen2021}, the pose of a 6-DOF rigid body
+is denoted by the position $\bm{p} \in \mathbb{R}^3$ and the attitude, paramaterized
+in euler angles as $\bm{\Theta} \in \mathbb{R}^3$. Note that the position is
+desribed in North-East-Down (NED) coordinates. The pose of the body is then
+\begin{align}
+    \bm{\eta}^T = \begin{bmatrix} \bm{p}^T & \bm{\Theta}^T \end{bmatrix}^T
+\end{align}
+The generalized body-fixed velocities are given by
+\begin{align}
+    \bm{\nu}^T = \begin{bmatrix} \bm{v}^T & \bm{\omega}^T \end{bmatrix}^T
+\end{align}
+where $\bm{v} \in \mathbb{R}^3$ is the linear velocity and $\bm{\omega} \in \mathbb{R}^3$
+is the angular velocity.
 % -----------------------------------------------------------------------------
 \section{SO(3) and SE(3)}
+\label{sec:bp:so3_se3}
 
 We denote by $\SO$ the special orthogonal group in three dimensions, which is
 the group of all $3 \times 3$ rotation matrices with determinant equal to one
@@ -185,35 +241,4 @@ motion can be written as
 where $\bm{M}(\bm{q})$ is symmetric and positive definite, $\bm{g}(\bm{q})$ is the
 gradient of the potential field.
 
-% -----------------------------------------------------------------------------
-\section{Notation}
-
-The mathematical notation is primarily based on the notation used in \cite{modsim},
-\cite{fossen2021}, and \cite{sola2017}. We denote the skew-symmetric operator of a vector $\bm{v} \in \mathbb{R}^3$ as
-\begin{subequations}
-\begin{align}
-    [\cdot]_{\times} &: \mathbb{R}^3 \to \mathbb{R}^{3\times 3} \\
-    [\bm{v}]_{\times} &= \begin{bmatrix}
-        0 & -v_3 & v_2 \\
-        v_3 & 0 & -v_1 \\
-        -v_2 & v_1 & 0
-    \end{bmatrix}
-\end{align}
-\end{subequations}
-where for any two vectors $\bm{u}, \bm{v} \in \mathbb{R}^3$
-\begin{align}
-    \bm{u} \times \bm{v} = [\bm{u}]_{\times} \bm{v}
-\end{align}
-Adopting notation from \cite{fossen2021}, the pose of a 6-DOF rigid body
-is denoted by the position $\bm{p} \in \mathbb{R}^3$ and the attitude, paramaterized
-in euler angles as $\bm{\Theta} \in \mathbb{R}^3$. Note that the position is
-desribed in North-East-Down (NED) coordinates. The pose of the body is then
-\begin{align}
-    \bm{\eta}^T = \begin{bmatrix} \bm{p}^T & \bm{\Theta}^T \end{bmatrix}^T
-\end{align}
-The generalized body-fixed velocities are given by
-\begin{align}
-    \bm{\nu}^T = \begin{bmatrix} \bm{v}^T & \bm{\omega}^T \end{bmatrix}^T
-\end{align}
-where $\bm{v} \in \mathbb{R}^3$ is the linear velocity and $\bm{\omega} \in \mathbb{R}^3$
-is the angular velocity.
+\section{Runge-Kutta Methods}

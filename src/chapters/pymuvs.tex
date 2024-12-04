@@ -2,16 +2,18 @@
 
 {
 \color{red}
+PyMUVs-kapitellet kan godt utvides en god del. Sensor vet ingenting om hvor mye tid du har brukt på debugging og implementering, så det må komme fram at dette er noe du har brukt mye tid på og som er en viktig del av bidraget ditt.
 \begin{itemize}
     \item Should this be a chapter?
     \item how relevant is this?
+    \item Nevn Gazebo, og at man ikke kan hente ut modellmatriser derifra, så det ikke er en fullstendig løsning for modellbasert styring av roboter.
+    \item Forklar hvordan det er implementert, med matematikken bak. Stor forskjell i en prosjektoppgave på å sitere modsimboka og på å implementere en dynamisk simulator fra scratch.
+    \item Beskriv hvordan systmet er definert i koden din
 \end{itemize}
 }
 
 \emph{\textbf{Py}MUVs \textbf{M}odels \textbf{U}nderwater \textbf{V}ehicle\textbf{s}}
 \newline
-
-\newcommand{\pymuvs}{\texttt{PyMUVs}}
 
 PyMUVs is a Python library for mathematically modelling underwater vehicles. The
 library is designed to be modular and easy to use, and is built on top of NumPy
@@ -36,12 +38,14 @@ The library is open-source and can be found at
 
 \section{Modules}
 The following sections will give an overview of the modules making up the
-library as well as some breif examples showing basic use cases.
+library as well as some breif examples showing basic use cases. Note that this
+is not a complete overview of the library, but rather a brief introduction to
+the most important functionality of each module.
 
 % ------------------------------------------------------------------------- se3
 \subsection{se3}
 The \texttt{se3} module contains functions for working with the special Euclidean
-group $SE(3)$. The module is built on top of SymPy and provides functions for
+group $SE(3)$. The module is built on top of \texttt{SymPy} and provides functions for
 generating elements of $SE(3)$ from \texttt{SymPy} symbols, as well as functions
 for computing the inverse and multiplication of the elements. A simple example
 is shown below.
@@ -53,8 +57,14 @@ is shown below.
     \label{fig:usage:se3}
 \end{figure}
 
-\autoref{fig:usage:se3} shows how to create rotation matrix from Euler angles.
+\autoref{fig:usage:se3} shows how to create a variable $T \in \SO$ representing
+a pure rotation in euler angles. More elements of this calss can be composed
+together to form arbitrary transformations. This group is used in other modules
+to represent the transformations between links in a robot model.
+
+% --------------------------------------------------------------------- util
 \subsection{util}
+
 
 % --------------------------------------------------------------------- codegen
 \subsection{codegen}
