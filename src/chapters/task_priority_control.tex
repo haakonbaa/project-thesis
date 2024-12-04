@@ -146,6 +146,65 @@ The variants discussed in \cite{antonelli2009} are summarized in the following t
 % -----------------------------------------------------------------------------
 \subsection{Acceleration-level control}
 
+The previous chapter discusses the velocity-level control of tasks. It is also 
+possible to determine the double derivative of the joint-space variables correspoinding to some
+desired task acceleration. To see this, consider \autoref{eq:def_task_jacobian} and differentiate
+with respect to time once more:
+\begin{align}
+    \ddot{\bm{\sigma}} = \frac{d}{dt}\left(\bm{J} \dot{\bm{q}}\right) = \dot{\bm{J}} \dot{\bm{q}} + \bm{J} \ddot{\bm{q}}
+    \label{eq:task_acc_jacobian}
+\end{align}
+Writing the general solution to this equation solving for the joint accelerations
+$\ddot{\bm{q}}$ gives
+\begin{align}
+    \ddot{\bm{q}} = \bm{J}^{+} \left(\ddot{\bm{\sigma}} - \dot{\bm{J}}\dot{\bm{q}}\right) +
+    \left(\mathbb{I} - \bm{J}^{+}\bm{J}\right) \bm{z} \label{eq:task_acc_control}
+\end{align}
+for some arbitrary vector $\bm{z} \in \mathbb{R}^n$. Inspired from the
+velocity-level control, one can define the desired joint accelerations as
+\begin{align}
+    \ddot{\bm{q}}_d = \bm{J}^{+} \left(\ddot{\bm{\sigma}}_d
+    - \dot{\bm{J}}\dot{\bm{q}}\right) \label{eq:task_priority_acc}
+\end{align}
+One can impose the closed loop characteristic of the task by defining the desired
+task acceleration implicitly as
+\begin{align}
+    \left(\ddot{\bm{\sigma}}_d - \ddot{\bm{\sigma}}\right) +
+    \bm{K}_d\left(\dot{\bm{\sigma}}_d - \dot{\bm{\sigma}}\right) +
+    \bm{K}_p\left(\bm{\sigma}_d - \bm{\sigma}\right) = 0 \label{eq:task_acc}
+\end{align}
+where $\bm{K}_d$ and $\bm{K}_p$ are positive definite matrices. Substituting
+\autoref{eq:task_acc} into the desired joint accelerations \autoref{eq:task_acc_jacobian},
+and doing this for each task, one can get the desired joint accelerations for each task.
+\begin{subequations}
+\begin{align}
+    \bm{J}_i\ddot{\bm{q}} &= -\dot{\bm{J}}_i\dot{\bm{q}} + \ddot{\bm{\sigma}}_{i,d} 
+    + \bm{K}_{d,i}\left(\dot{\bm{\sigma}}_{i,d} - \dot{\bm{\sigma}}_i\right)
+    + \bm{K}_{p,i}\left(\bm{\sigma}_{i,d} - \bm{\sigma}_i\right) \\
+    &=: \bm{h}_i(\bm{q}, \dot{\bm{q}}, t) \\
+    \ddot{\bm{q}}_d &= \bm{J}_1^{+} \bm{h}_1 + \left(\mathbb{I} - \bm{J}_1^+\bm{J}_1\right) \bm{J}_2^{+} \bm{h}_2
+\end{align}
+\end{subequations}
+This method is called accleleration-level task priority control. The method can
+be generalized to multiple tasks by using the same methods as presented in \autoref{sec:tpc_intro}.
+
+\subsection{Optimization Objective as Tasks}
+
+Tasks can be generalized from the form presented in \autoref{eq:def_task}, where
+the main objective of the task is to make a certain point attached to the robot
+manipulator follow a certain trajectory. The task can be generalized to be the
+orientation of the end-effector and/or some optimization objective. As presented
+in\cite{nakamura1987}, the task can be defined as the gradient of an optimization
+function. Consider an artificial potential function $P(\bm{q})$ and and a dissipative function
+$D(\dot{\bm{q}})$. The task can then be defined as
+\begin{align}
+    \bm{\sigma} = -\nabla_{\bm{q}} P(\bm{q}) - \nabla_{\dot{\bm{q}}}D(\dot{\bm{q}})
+\end{align}
+In \cite{nakamura1987}, the authors show that, in simulation, a 4-jointed planar
+manipulator can successfully avoid a rectangular obstacle using this method. This is
+also shown in \cite{siciliano1991} where a 7-DOF planar manipulator has a path
+following task with priority 1 and a circular obstacle avoidance task with priority 2.
+Although this method does not use a dissipative function in the optimization objective.
 
 \subsection{Implementation details}
 

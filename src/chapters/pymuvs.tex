@@ -1,0 +1,73 @@
+\chapter{PyMUVs}
+
+{
+\color{red}
+\begin{itemize}
+    \item Should this be a chapter?
+    \item how relevant is this?
+\end{itemize}
+}
+
+\emph{\textbf{Py}MUVs \textbf{M}odels \textbf{U}nderwater \textbf{V}ehicle\textbf{s}}
+\newline
+
+\newcommand{\pymuvs}{\texttt{PyMUVs}}
+
+PyMUVs is a Python library for mathematically modelling underwater vehicles. The
+library is designed to be modular and easy to use, and is built on top of NumPy
+\cite{numpy} and SymPy \cite{sympy}. By defining the a set of links and transformations
+between them, \pymuvs can compute a symbolic representation of the system on the
+form
+\begin{align}
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} +
+    \bm{D}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{g}(\bm{q}) = \bm{J}^T(\bm{q}) \bm{B} \bm{u}
+    \label{eq:pymuvs:eom}
+\end{align}
+The matrices $\bm{M}$, $\bm{C}$, $\bm{D}$, $\bm{g}$, $\bm{J}$, and $\bm{B}$ are
+computed symbolically and can be used to simulate the system. This is especially
+usefull when implementing model-based controllers that require the dynamics of the
+system to be on the form of, or similar to \autoref{eq:pymuvs:eom}. The library
+also supports exporting the symbolic representation, and the whole model to C++
+code, which can be used in real-time simulations or for significantly faster
+simulations. The library being written in python allows for quick and easy
+prototyping of models, being able to remove and add links and transformations.
+The library is open-source and can be found at
+\url{https://github.com/haakonbaa/pymuvs}. 
+
+\section{Modules}
+The following sections will give an overview of the modules making up the
+library as well as some breif examples showing basic use cases.
+
+% ------------------------------------------------------------------------- se3
+\subsection{se3}
+The \texttt{se3} module contains functions for working with the special Euclidean
+group $SE(3)$. The module is built on top of SymPy and provides functions for
+generating elements of $SE(3)$ from \texttt{SymPy} symbols, as well as functions
+for computing the inverse and multiplication of the elements. A simple example
+is shown below.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[page=1,width=\linewidth,trim=0 11cm 0 0]{assets/se3.pdf}
+    \caption{Example usage of the \texttt{se3} module.}
+    \label{fig:usage:se3}
+\end{figure}
+
+\autoref{fig:usage:se3} shows how to create rotation matrix from Euler angles.
+\subsection{util}
+
+% --------------------------------------------------------------------- codegen
+\subsection{codegen}
+The \texttt{codegen} module is used to generate C++ code from a model. The module
+uses the \texttt{sympy.ccode} function to generate C code from
+each expression in every matrix and combines them into a header and a source
+file. The \texttt{Eigen} library \cite{eigen3} is used to represent the matrices.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[page=1,width=\linewidth,trim=0 9cm 0 0]{assets/codegen.pdf}
+    \caption{Automatically generated c++ code from a model.}
+    \label{fig:codegen}
+\end{figure}
+
+\subsection{pymuvs}
