@@ -43,9 +43,9 @@ $\operatorname{se}(3)$ as
 \end{subequations}
 
 Adopting notation from \cite{fossen2021}, the pose of a 6-DOF rigid body
-is denoted by the position $\bm{p} \in \mathbb{R}^3$ and the attitude, paramaterized
-in euler angles as $\bm{\Theta} \in \mathbb{R}^3$. Note that the position is
-desribed in North-East-Down (NED) coordinates. The pose of the body is then
+is denoted by the position $\bm{p} \in \mathbb{R}^3$ and the attitude, parameterized
+in Euler angles as $\bm{\Theta} \in \mathbb{R}^3$. Note that the position is
+described in North-East-Down (NED) coordinates. The pose of the body is then
 \begin{align}
     \bm{\eta}^T = \begin{bmatrix} \bm{p}^T & \bm{\Theta}^T \end{bmatrix}^T
 \end{align}
@@ -55,12 +55,14 @@ The generalized body-fixed velocities are given by
 \end{align}
 where $\bm{v} \in \mathbb{R}^3$ is the linear velocity and $\bm{\omega} \in \mathbb{R}^3$
 is the angular velocity.
+
 % -----------------------------------------------------------------------------
 \section{SO(3) and SE(3)}
 \label{sec:bp:so3_se3}
 
 We denote by $\SO$ the special orthogonal group in three dimensions, which is
-the group of all $3 \times 3$ rotation matrices with determinant equal to one
+the group of all $3 \times 3$ rotation matrices with determinant equal to one,
+such that
 \begin{align}
     \SO = \{ \bm{R} \in \mathbb{R}^{3 \times 3} \mid \bm{R}^T \bm{R} = \mathbb{I}, \det(\bm{R}) = 1 \}.
 \end{align}
@@ -68,18 +70,23 @@ Intuitively, $R^T R = \mathbb{I}$ means that the columns of $R$ are orthonormal,
 and $\det(R) = 1$ means that $R$ is a proper rotation, i.e., it does not include
 a reflection. When specifying reference frames, we say that
 \begin{align}
-    \bm{p}^b = \bm{R}_{a}^b \bm{p}^a
+    \bm{p}^b = \bm{R}_{a}^b \bm{p}^a,
 \end{align}
-meaning that the rotation matrix $\bm{R}_{a}^b$ rotates a vector from frame $a$
-to frame $b$. Some important properties of $\bm{R}_a^b \in \SO$ are as follows \cite{modsim}:
+meaning that the rotation matrix $\bm{R}_{a}^b$ rotates a vector
+$\bm{p}^a\in\R^3$ from frame $a$ to frame $b$. Some important properties
+of $\bm{R}_a^b \in \SO$ are as follows \cite{modsim}:
 \begin{itemize}
 \item $\bm{R}_a^b = (\bm{R}_b^a)^{-1} = (\bm{R}_b^a)^T$
-\item $\bm{R}_a^b \bm{R}_b^c = \bm{R}_a^c$
+\item $\bm{R}_a^b \bm{R}_b^c = \bm{R}_a^c$.
 \end{itemize}
 Rotations are often parameterized using Euler angles, quaternions, angle-axis or
-rodriquez parameters. In this thesis, euler angles are used for simplicity. A
-rotation matrix $\bm{R}$ can be represented by a rotation about the $x$-axis followed
-by rotations about the $y$- and $z$-axes respectively. The rotation matrix is then \cite{modsim}
+rodriquez parameters. In this thesis, Euler angles are used for simplicity. 
+{\color{red}Write a more explicit defintion of Euler angles, and how they are related to R.
+Explain reference frames before Euler angles.}
+A rotation matrix $\bm{R}$ can be represented by a rotation about the $x$-axis followed
+by rotations about the $y$- and $z$-axes respectively.
+
+The rotation matrix is then \cite{modsim}
 \begin{align}
     \bm{R} = \bm{R}_z(\psi) \bm{R}_y(\theta) \bm{R}_x(\phi),
 \end{align}
@@ -105,19 +112,11 @@ where
 \end{subequations}
 A disadvantage of using Euler angles is the well known problem of gimbal lock.
 This occurs when two of the three axes align, causing the rotation matrix to lose
-a degree of freedom. When this happens the mass matrix of the system becomes singular
-and the system loses a degree of freedom. It is therefore impossible to determine
-the derivative of the Euler angles.
+a degree of freedom. We say that the system has lost a degree of freedom when this
+happens.
 
-{\color{red}
-Write more about
-\begin{itemize}
-    \item Definition of angular velocity and skew-symmetric operators
-    \item SE(3)
-    \item Quaternions
-    \item twist from euler angles and quaternions
-\end{itemize}
-}
+
+
 
 % -----------------------------------------------------------------------------
 \section{Pseudo-Inverse and Null Space Projections}
@@ -126,12 +125,6 @@ Write more about
 For a given matrix $\bm{A} \in \mathbb{R}^{n\times m}$ we define the Moore-Penrose
 pseudo-inverse $\bm{A}^{+} \in \mathbb{R}^{m\times n}$ as the unique matrix
 satisfying the following four properties \cite{penrose1955}:
-%\begin{enumerate}
-%\item $\bm{A}\bm{A}^{+}\bm{A} = \bm{A}$
-%\item $\bm{A}^{+}\bm{A}\bm{A}^{+} = \bm{A}^{+}$
-%\item $(\bm{A}\bm{A}^{+})^T = \bm{A}\bm{A}^{+}$
-%\item $(\bm{A}^{+}\bm{A})^T = \bm{A}^{+}\bm{A}$
-%\end{enumerate}
 \begin{subequations}
     \begin{align}
         &\textrm{1. } & \bm{A}\bm{A}^{+}\bm{A} &= \bm{A} \\
@@ -144,13 +137,13 @@ Note that in the general case, the transpose operator can be replaced by the
 conjugate transpose (hermitian) operator for matrices over the complex field $\mathbb{C}$ \cite{penrose1955}.
 It can be shown that for a full-column rank matrix $\bm{A}$, the pseudo-inverse is
 \begin{align}
-    \bm{A}^{+} = (\bm{A}^T \bm{A})^{-1} \bm{A}^T
+    \bm{A}^{+} = (\bm{A}^T \bm{A})^{-1} \bm{A}^T,
 \end{align}
 and for a full-row rank matrix $\bm{A}$, the pseudo-inverse is
 \begin{align}
-    \bm{A}^{+} = \bm{A}^T (\bm{A} \bm{A}^T)^{-1}
+    \bm{A}^{+} = \bm{A}^T (\bm{A} \bm{A}^T)^{-1}.
 \end{align}
-In the general case, weather or not $\bm{A}$ is full rank, the pseudo-inverse can allways
+In the general case, whether or not $\bm{A}$ is full rank, the pseudo-inverse can always
 be computed using the singular value decomposition (SVD) of $\bm{A}$. The SVD of $\bm{A}$ is
 \begin{subequations}
 \begin{align}
@@ -159,36 +152,35 @@ be computed using the singular value decomposition (SVD) of $\bm{A}$. The SVD of
     \bm{V} &\in \mathbb{R}^{m\times m} \textrm{ unitary} \\
     \bm{\Sigma} &= \operatorname{diag}(\sigma_1, \sigma_2, \ldots, \sigma_r, 0, \ldots, 0) \in \mathbb{R}^{n\times m} \\
     \sigma_1 &\geq \sigma_2 \geq \ldots \geq \sigma_r > 0 \\
-    r &= \operatorname{rank}(\bm{A})
+    r &= \operatorname{rank}(\bm{A}).
 \end{align}
 \end{subequations}
-Where a matrix $U$ is unitry iff $U^T U = U U^T = \mathbb{I}$. The pseudo-inverse
+Where a matrix $U$ is unitry if and only if $U^T U = U U^T = \mathbb{I}$. The pseudo-inverse
 of $\bm{A}$ can then be computed as
 \begin{subequations}
 \begin{align}
     \bm{A}^{+} &= \bm{V} \bm{\Sigma}^{+} \bm{U}^T \\
-    \bm{\Sigma}^{+} &:= \operatorname{diag}(\sigma_1^{-1}, \sigma_2^{-1}, \ldots, \sigma_r^{-1}, 0, \ldots, 0)
+    \bm{\Sigma}^{+} &:= \operatorname{diag}(\sigma_1^{-1}, \sigma_2^{-1}, \ldots, \sigma_r^{-1}, 0, \ldots, 0).
 \end{align}
 \end{subequations}
-
-The singular value
-decompositoin will be important when dealing with singularity robust task priority
-control later on in this thesis.
+The singular value decomposition will be important when dealing with
+singularity-robust task-priority control later on in this thesis.
 
 Consider the optimization problem
 \begin{align}
-    \min_{\bm{x} \in \mathbb{R}^m} || \bm{A} \bm{x} - \bm{b} ||
+    \min_{\bm{x} \in \mathbb{R}^m} || \bm{A} \bm{x} - \bm{b} ||.
 \end{align}
-The solutoin to this problem is given by
+The solution to this problem is given by
 \begin{align}
-    \bm{x} = \bm{A}^{+} \bm{b} + (\mathbb{I} - \bm{A}^{+} \bm{A}) \bm{z}
+    \bm{x} = \bm{A}^{+} \bm{b} + (\mathbb{I} - \bm{A}^{+} \bm{A}) \bm{z},
 \end{align}
-where $\bm{z} \in \mathbb{R}^m$ is an arbitrary vector. The term $(\mathbb{I} - \bm{A}^{+} \bm{A}) \bm{z}$
-is the null space projection of $\bm{z}$ onto the null space of $\bm{A}$. Parts
+where $\bm{z} \in \mathbb{R}^n$ is an arbitrary vector. The term $(\mathbb{I} - \bm{A}^{+} \bm{A}) \bm{z}$
+is the null-space projection of $\bm{z}$ onto the null-space of $\bm{A}$. Parts
 of this fact can bee seen by noting that
 \begin{align}
-    \bm{A}\left(\mathbb{I} - \bm{A}^{+} \bm{A}\right) = \bm{A} - \bm{A} = 0
+    \bm{A}\left(\mathbb{I} - \bm{A}^{+} \bm{A}\right) = \bm{A} - \bm{A} = 0.
 \end{align}
+{\color{red}Say something about what this means in practice.}
 
 % -----------------------------------------------------------------------------
 \section{Lagrange's Equation of Motion}
@@ -199,7 +191,7 @@ Lagrange's equation are equivalent to the equations of motion derived from
 the classical Newton-Euler equations \cite{modsim}. There are however some advantages to using
 Lagrange's equation. For example, the equations are easier to derive for complex
 systems where the kinetic and potential energy is known. With modern computer
-algebra systems (CAS), the equations can be derived automatically, which is
+algebra systems, the equations can be derived automatically, which is
 a great advantage for complex systems.
 
 Consider a system with $n$ generalized coordinates $q_1, q_2, \ldots, q_n$, and
@@ -231,10 +223,12 @@ on the $i$-th generalized coordinate.
 where $\bm{r}_k$ is the position of the $k$-th force and $\bm{F}_k$ is the force
 acting on this position. In cases where the kinetic energy is on the form
 \begin{align}
-    T = \frac{1}{2} \bm{\dot{q}}^T \bm{J}^T(\bm{q}) \bar{\bm{M}} \bm{J}(\bm{q}) \bm{\dot{q}}
+    T = \frac{1}{2} \bm{\dot{q}}^T \bm{J}^T(\bm{q}) \bm{M} \bm{J}(\bm{q}) \bm{\dot{q}},
 \end{align}
-and the potential energy is a result of some potential field, the equations of
-motion can be written as
+where $\bm{M}$ is symmetric and positive definite, the potential energy the
+result of some potential field, and $\bm{J}(\bm{q})$ is the Jacobian of the
+generalized coordinates, to be defined later, the equations of motion can be
+written as
 \begin{align}
     \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{g}(\bm{q}) = \bm{\tau}
 \end{align}
@@ -242,3 +236,14 @@ where $\bm{M}(\bm{q})$ is symmetric and positive definite, $\bm{g}(\bm{q})$ is t
 gradient of the potential field.
 
 \section{Runge-Kutta Methods}
+
+{\color{red}
+Write more about
+\begin{itemize}
+    \item Write about coordinate frames and mention NED
+    \item $g$ begin the gradient of the potential field is not completely correct
+    \item Definition of angular velocity and skew-symmetric operators
+    \item SE(3)
+    \item twist from Euler angles and quaternions
+\end{itemize}
+}

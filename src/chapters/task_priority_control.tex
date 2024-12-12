@@ -1,4 +1,4 @@
-\chapter{Task Priority Control}
+\chapter{Task-Priority Control}
 
 This chapter explores various methods for task priority control, beginning with
 an introduction to its fundamental concepts and a presentation of one of the
@@ -6,14 +6,6 @@ earliest and most straightforward techniques. It then continues into more advanc
 approaches and concludes with a discussion of key implementation considerations,
 including singularity robustness, for real-world robotic applications.
 
-{
-    \color{red}
-    \begin{enumerate}
-        \item Task variable as a gradient of an obtimization objective.
-        \item force-level? dynamic-level?
-        \item The method presented above is not "optimal"
-    \end{enumerate}
-}
 % -----------------------------------------------------------------------------
 \section{Introduction}
 \label{sec:tpc_intro}
@@ -22,8 +14,11 @@ Each task is assigned a specific priority level, and the goal is to prioritize t
 tasks my minimizing its error while balancing the lower-priority objectives. The
 following sections are based largely on the work of \cite{antonelli2009}, which provides
 an excellent overview of the topic in terms of velocity level control. The concepts
-regarding velocity-, acceleration and force-level control are to be defined in the
+of velocity-, acceleration- and force-level control are to be defined in the
 following sections.
+{\color{red}Jeg synes du kan være mer tydelig i introduksjonen her. Hvordan virker prioritetsnivåene i task-priority control? Hva betyr det egentlig at en task har høyere prioritet enn en annen?}
+
+\subsection{Velocity-level control}
 
 A task variable $\bm{\sigma}(t) \in \mathbb{R}^m$ is defined as a function of the robot's
 joint variables $\bm{q}(t) \in \mathbb{R}^n$.
@@ -39,7 +34,7 @@ can be defined as
     \dot{\bm{\sigma}}(t) = \frac{\partial \bm{f}(\bm{q}(t))}{\partial \bm{q}} \dot{\bm{q}}(t)= \bm{J}(\bm{q}(t)) \dot{\bm{q}}(t) \label{eq:def_task_jacobian}
 \end{align}
 
-The matrix $\bm{J}(\bm{q}(t)) \in \mathbb{R}^{m \times n}$ is called the
+The matrix $\bm{J}(\bm{q}(t)) \in \mathbb{R}^{n \times m}$ is called the
 \emph{task Jacobian}, or simply the \emph{Jacobian}, and maps the joint
 velocities $\dot{\bm{q}}(t)$ to the task velocity $\dot{\bm{\sigma}}(t)$.
 The Jacobian is a function of the robot's joint variables $\bm{q}(t)$.
@@ -57,7 +52,7 @@ In practice the jacobian might not represent the true kinematics of the robot.
 Furthermore, depending on the task, the desired task velocity might not be feasible,
 and there might be model errors and noise in the estimated joint velocities making
 the joint velocities not equal to the desired joint velocities. Because of this,
-a feedack controller is needed to ensure that the desired task velocity is
+a feedback controller is needed to ensure that the desired task velocity is
 achieved. Substituting the desired task velocity $\dot{\bm{\sigma}}_d(t)$ in 
 \autoref{eq:task_priority} with
 a feedforward term and a feedback term, the joint velocities can be computed as
@@ -142,12 +137,19 @@ The variants discussed in \cite{antonelli2009} are summarized in the following t
     \caption{Task priority control variants. Table from \cite{antonelli2009}}
 \end{table}
 
+{
+    \color{red}
+    \begin{itemize}
+        \item Se kommentar om sucessive vs augmented null space projections
+    \end{itemize}
+}
+
 
 % -----------------------------------------------------------------------------
 \subsection{Acceleration-level control}
 
 The previous chapter discusses the velocity-level control of tasks. It is also 
-possible to determine the double derivative of the joint-space variables correspoinding to some
+possible to determine the double derivative of the joint-space variables corresponding to some
 desired task acceleration. To see this, consider \autoref{eq:def_task_jacobian} and differentiate
 with respect to time once more:
 \begin{align}
@@ -166,7 +168,7 @@ velocity-level control, one can define the desired joint accelerations as
     \ddot{\bm{q}}_d = \bm{J}^{+} \left(\ddot{\bm{\sigma}}_d
     - \dot{\bm{J}}\dot{\bm{q}}\right) \label{eq:task_priority_acc}
 \end{align}
-One can impose the closed loop characteristic of the task by defining the desired
+One can impose the closed-loop characteristic of the task by defining the desired
 task acceleration implicitly as
 \begin{align}
     \left(\ddot{\bm{\sigma}}_d - \ddot{\bm{\sigma}}\right) +
@@ -185,7 +187,7 @@ and doing this for each task, one can get the desired joint accelerations for ea
     \ddot{\bm{q}}_d &= \bm{J}_1^{+} \bm{h}_1 + \left(\mathbb{I} - \bm{J}_1^+\bm{J}_1\right) \bm{J}_2^{+} \bm{h}_2
 \end{align}
 \end{subequations}
-This method is called accleleration-level task priority control. The method can
+This method is called acceleration-level task priority control. The method can
 be generalized to multiple tasks by using the same methods as presented in \autoref{sec:tpc_intro}.
 
 \subsection{Optimization Objective as Tasks}
@@ -233,8 +235,8 @@ see that the joint acceleration is given by:
 \end{subequations}
 Since the mass matrix is positive definite, there is an equivalence between the
 desired joint acceleration and the actual joint acceleration. In practice
-however, the approximations are not exact, and the torque might not be feasible,
-furthermore, the estimated joint velocities and accelerations might be noisy.
+however, the approximations are not exact, and the torque might not be feasible.
+Furthermore, the estimated joint velocities and accelerations might be noisy.
 This is however a well studied problem, and there are several methods for
 dealing with this. Among the most common and simplest methods are feedback control
 with PID controllers. Substituting $\ddot{\bm{q}}_d$ in \autoref{eq:torque_feedback_lin}
@@ -242,8 +244,10 @@ by a simple PD controller, one can get a simple feedback controller:
 {
     \color{red}
     \begin{itemize}
-        \item is this even relevant? Are controllers on this level used in practice?
-            Won't the controller on the task level take care of this?
+        \item Write more about the feedback controller. This one is model-based
+            in general we want to use a model-free PD(+) controller to track
+            the desired joint velocities. desired joint accelerations can be
+            integrated to get desired joint velocities.
     \end{itemize}
 }
 
@@ -326,5 +330,17 @@ to start damping the pseudoinverse based on how close the singular values are to
 
 {
 \color{red}
-Don't konw if i want to talk about the "Variable damped least squares inverse with low isotropic damping"
 }
+{
+    \color{red}
+    \begin{enumerate}
+        \item Task variable as a gradient of an obtimization objective.
+        \item force-level? dynamic-level?
+        \item The method presented above is not "optimal"
+        \item Mention that the system can loose one degree of freedom (titanic angle), When this happens the mass matrix of the system becomes singular
+and the system loses a degree of freedom. It is therefore impossible to determine
+the derivative of the Euler angles.
+        \item Don't konw if i want to talk about the "Variable damped least squares inverse with low isotropic damping"
+    \end{enumerate}
+}
+

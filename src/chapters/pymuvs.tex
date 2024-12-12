@@ -27,18 +27,19 @@ form
 \end{align}
 The matrices $\bm{M}$, $\bm{C}$, $\bm{D}$, $\bm{g}$, $\bm{J}$, and $\bm{B}$ are
 computed symbolically and can be used to simulate the system. This is especially
-usefull when implementing model-based controllers that require the dynamics of the
+useful when implementing model-based controllers that require the dynamics of the
 system to be on the form of, or similar to \autoref{eq:pymuvs:eom}. The library
 also supports exporting the symbolic representation, and the whole model to C++
 code, which can be used in real-time simulations or for significantly faster
-simulations. The library being written in python allows for quick and easy
-prototyping of models, being able to remove and add links and transformations.
+simulations.
+The library, written in Python, allows for quick and easy prototyping of
+models, with the flexibility to add or remove links and transformations.
 The library is open-source and can be found at
 \url{https://github.com/haakonbaa/pymuvs}. 
 
 \section{Modules}
 The following sections will give an overview of the modules making up the
-library as well as some breif examples showing basic use cases. Note that this
+library as well as some brief examples showing basic use cases. Note that this
 is not a complete overview of the library, but rather a brief introduction to
 the most important functionality of each module.
 
@@ -81,3 +82,10 @@ file. The \texttt{Eigen} library \cite{eigen3} is used to represent the matrices
 \end{figure}
 
 \subsection{pymuvs}
+
+{
+    \color{red}
+    \begin{itemize}
+        \item masterstudent skulle lest dette og brukt PyMUVS i sin oppgave, hva trenger man å vite? (ikke detaljert dokumentasjon, bare oversikt over input/modellbeskrivelse->output)
+    \end{itemize}
+}

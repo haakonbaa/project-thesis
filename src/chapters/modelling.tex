@@ -1,69 +1,78 @@
-\chapter{Modelling}
+\chapter{Modeling}
 
 \section{Rigid Body Kinetics}
 
-Consider a rigid body with mass $m$. Denote by $\bm{v}_{ng}^b$ the translational
-velocity, and by $\bm{\omega}_{ng}^b$ the angular velocity of the body in the
+Consider a rigid body with mass $m$. Denote by $\bm{v}_{ng}^b$ the bodys translational
+velocity, and by $\bm{\omega}_{ng}^b$ its angular velocity in the
 body-fixed frame. We can find the kinetic energy of the body by integrating the
-kinetic energy of every infinitesimal mass element of the body.
+kinetic energy of every infinitesimal mass element.
 \begin{equation}
-    T = \frac{1}{2} \int \bm{v}_m^T \bm{v}_m\, dm
+    T = \frac{1}{2} \int \bm{v}_m^T \bm{v}_m\, dm,
 \end{equation}
-Where $\bm{v}_m$ is the velocity of the mass element. Noting that
+where $\bm{v}_m$ is the velocity of the mass element.
+The velocity of the mass element $\bm{v}_m$ can be expressed as
 \begin{align}
-    \bm{v}_m &= \bm{v}_{ng}^b + \bm{\omega}_{ng}^b \times \bm{r}_m
+    \bm{v}_m &= \bm{v}_{ng}^b + \bm{\omega}_{ng}^b \times \bm{r}_m,
 \end{align}
 where $\bm{r}_m$ is the position of the mass element relative to the center of
-mass. By defining $\bm{\nu} = \begin{pmatrix}(\bm{v}_{ng}^b)^T & (\bm{\omega}_{ng}^b)^T \end{pmatrix}^T$ The kinetic energy can be written as
+mass. By defining $\bm{\nu} = \begin{pmatrix}(\bm{v}_{ng}^b)^T & (\bm{\omega}_{ng}^b)^T \end{pmatrix}^T$, the kinetic energy can be written as
 \begin{align}
     T = \frac{1}{2} \bm{\nu}^T
     \begin{pmatrix}
         \bm{I}_{3\times 3} \int \,dm & - \int [\bm{r}_m]_\times \,dm \\
         - \int [\bm{r}_m]_\times \,dm & -\int [\bm{r}_m]_\times [\bm{r}_m]_\times \,dm
     \end{pmatrix}
-    \bm{\nu}
+    \bm{\nu}\label{eq:T_body}
 \end{align}
-Since the twist is defined in the center of gravity,
+Since the twist is defined in the center of gravity, we have that
 \begin{align}
-    \int [\bm{r}_m]_{\times} \,dm &= \bm{0}
+    \int [\bm{r}_m]_{\times} \,dm &= \bm{0},
 \end{align}
-by definition of the center of mass. The bottom right block is recognized as the
+by definition of the center of mass. The bottom right block in \autoref{eq:T_body} is recognized as the
 definition of the inertia matrix $\bm{I_g^b}$. The kinetic energy can then be
 expressed as
+\begin{subequations}
 \begin{align}
-    T = \frac{1}{2} \bm{\nu}^T \begin{pmatrix} m\bm{I}_{3\times 3} & \bm{0} \\ \bm{0} & \bm{I}_g^b \end{pmatrix} \bm{\nu}
+    \bm{M} &= \begin{pmatrix} m\bm{I}_{3\times 3} & \bm{0} \\ \bm{0} & \bm{I}_g^b \end{pmatrix} \\
+        T &= \frac{1}{2} \bm{\nu}^T \bm{M} \bm{\nu}. \label{eq:TM_body}
 \end{align}
-Using lagrange's method, begin careful when differentiating in a rotating frame,
+\end{subequations}
+The matrix $\bm{M}$ in \autoref{eq:TM_body} is called the spatial inertia matrix of the rigid body.
+Using Lagrange's method, being careful when differentiating in a rotating frame,
 we can find the equations of motion for the rigid body as \cite{fossen2021}:
 \begin{align}
+    \underbrace{
     \begin{pmatrix}
         m \bm{I}_{3\times 3} & \bm{0} \\
         \bm{0} & \bm{I}_g^b
-    \end{pmatrix} \dot{\bm{\nu}}
+    \end{pmatrix}
+}_{\bm{M}_{RB}^{CG}} \dot{\bm{\nu}}
     +
+    \underbrace{
     \begin{pmatrix}
         m [\bm{\omega}_{nb}^b]_{\times} & \bm{0} \\
         \bm{0} & -[\bm{I}_g^b \bm{\omega}_{nb}^b]_{\times}
-    \end{pmatrix} \bm{\nu} = \bm{\tau}
+    \end{pmatrix}
+}_{\bm{C}_{RB}^{CG}}\bm{\nu} = \bm{\tau}
 \end{align}
 where $\bm{\tau}$ is the generalized forces acting on the body. We call the matrices
 pre-multiplying $\dot{\bm{\nu}}$ and $\bm{\nu}$ for $\bm{M}_{RB}^{CG}$ and $\bm{C}_{RB}^{CG}$ respectively.
 
 
-
+% -----------------------------------------------------------------------------
 \subsection{Hydrodynamics}
 
-When a rigid body accelerates in a fluid, the fluid is accellerated as well. 
+When a rigid body accelerates in a fluid, the fluid is accelerated as well. 
 This contributes to the total kinetic energy of the system \cite{antonelli2018}.
 To compensate for these effects, the spatial inertia matrix of the rigid body
-can be augmented to approxiate the total kinetic energy of the system. 
+can be augmented to approximate the total kinetic energy of the system: 
 \begin{equation}
-    \bm{M} = \bm{M}_{RB} + \bm{M}_{A}
+    \bm{M} = \bm{M}_{RB} + \bm{M}_{A}.
 \end{equation}
-The matrix $\bm{M}_A$ is in reality a function of the wave exitaction frequency
+The matrix $\bm{M}_A$ is in reality a function of the wave excitation frequency
 of the waves in the ocean \cite{fossen2021}. Because of the complex computations
 of $\bm{M}_A(\omega)$, as well as the fact that for large vessels the natural
-frequencies of the vessel are much lower than the wave exitaction frequencies,
+frequencies of the vessel are much lower than the wave excitation frequencies,
 the added mass matrix is approximated as the zero-frequency added mass matrix
 \begin{align}
     \bm{M}_A(\omega) &\approx \bm{M}_A(0)
@@ -107,12 +116,12 @@ can be approximated as \cite{fossen2021}:
  N_{\dot{r}} &= M_{\dot{q}} \nonumber
 \end{align}
 
-\section{Lagrange formulation}
-
-A commonly used mathematical description of the system when implementing task-
-priority control is:
-\begin{align}
-    \bm{M}(\bm{q})\ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}})\dot{\bm{q}} + \bm{D}(\bm{q}, \dot{\bm{q}})\dot{\bm{q}} + \bm{G}(\bm{q}) = \bm{\tau}
-\end{align}
-
-
+{
+    \color{red}
+    \begin{itemize}
+        \item Multi-body dynamics
+        \item Hydrodynamics (damping)
+        \item Jacobians
+        \item Inspiration from Henrik?
+    \end{itemize}
+}
