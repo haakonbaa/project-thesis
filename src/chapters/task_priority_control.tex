@@ -208,7 +208,7 @@ also shown in \cite{siciliano1991} where a 7-DOF planar manipulator has a path
 following task with priority 1 and a circular obstacle avoidance task with priority 2.
 Although this method does not use a dissipative function in the optimization objective.
 
-\subsection{Implementation details}
+\subsection{Joint level control}
 
 In \autoref{sec:tpc_intro}, one of the assumptions was that a controller exists
 that can generate the desired joint velocities $\dot{\bm{q}}(t)$. Using a
@@ -307,9 +307,9 @@ and for small values of $\sigma_i$,
     \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \approx 0
 \end{align}
 This will make the pseudoinverse well-conditioned for all values of $\sigma_i$.
-The trado-off is that the damped pseudoinverse will not be the true pseudoinverse,
-this might lead to tasks with lower priority affecting the higher priority tasks and
-breaks some of the assumptions made when proving stability and task consistency.
+The trado-off is that the damped pseudoinverse will not be the true pseudoinverse.
+This might lead to tasks with lower priority affecting the higher-priority tasks and
+breaking some of the assumptions made when proving stability and task consistency.
 
 A way to make the pseudoinverse more accurate when far from singularities is to
 use the \emph{variable damped least-squares inverse} (VDLSI) proposed by \cite{chiaverini1997}.

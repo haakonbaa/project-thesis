@@ -15,13 +15,13 @@ The velocity of the mass element $\bm{v}_m$ can be expressed as
     \bm{v}_m &= \bm{v}_{ng}^b + \bm{\omega}_{ng}^b \times \bm{r}_m,
 \end{align}
 where $\bm{r}_m$ is the position of the mass element relative to the center of
-mass. By defining $\bm{\nu} = \begin{pmatrix}(\bm{v}_{ng}^b)^T & (\bm{\omega}_{ng}^b)^T \end{pmatrix}^T$, the kinetic energy can be written as
+mass. By defining $\bm{\nu} = \bm{\nu}_{bg}^b = \begin{bmatrix}(\bm{v}_{ng}^b)^T & (\bm{\omega}_{ng}^b)^T \end{bmatrix}^T$, the kinetic energy can be written as
 \begin{align}
     T = \frac{1}{2} \bm{\nu}^T
-    \begin{pmatrix}
-        \bm{I}_{3\times 3} \int \,dm & - \int [\bm{r}_m]_\times \,dm \\
+    \begin{bmatrix}
+        \I_{3\times 3} \int \,dm & - \int [\bm{r}_m]_\times \,dm \\
         - \int [\bm{r}_m]_\times \,dm & -\int [\bm{r}_m]_\times [\bm{r}_m]_\times \,dm
-    \end{pmatrix}
+    \end{bmatrix}
     \bm{\nu}\label{eq:T_body}
 \end{align}
 Since the twist is defined in the center of gravity, we have that
@@ -33,7 +33,7 @@ definition of the inertia matrix $\bm{I_g^b}$. The kinetic energy can then be
 expressed as
 \begin{subequations}
 \begin{align}
-    \bm{M} &= \begin{pmatrix} m\bm{I}_{3\times 3} & \bm{0} \\ \bm{0} & \bm{I}_g^b \end{pmatrix} \\
+    \bm{M} &= \begin{bmatrix} m\I_{3} & \bm{0} \\ \bm{0} & \bm{I}_g^b \end{bmatrix} \\
         T &= \frac{1}{2} \bm{\nu}^T \bm{M} \bm{\nu}. \label{eq:TM_body}
 \end{align}
 \end{subequations}
@@ -42,25 +42,67 @@ Using Lagrange's method, being careful when differentiating in a rotating frame,
 we can find the equations of motion for the rigid body as \cite{fossen2021}:
 \begin{align}
     \underbrace{
-    \begin{pmatrix}
-        m \bm{I}_{3\times 3} & \bm{0} \\
+    \begin{bmatrix}
+        m \I_{3} & \bm{0} \\
         \bm{0} & \bm{I}_g^b
-    \end{pmatrix}
+    \end{bmatrix}
 }_{\bm{M}_{RB}^{CG}} \dot{\bm{\nu}}
     +
     \underbrace{
-    \begin{pmatrix}
+    \begin{bmatrix}
         m [\bm{\omega}_{nb}^b]_{\times} & \bm{0} \\
         \bm{0} & -[\bm{I}_g^b \bm{\omega}_{nb}^b]_{\times}
-    \end{pmatrix}
+    \end{bmatrix}
 }_{\bm{C}_{RB}^{CG}}\bm{\nu} = \bm{\tau}
+    \label{eq:rigid_body_eom_cg}
 \end{align}
 where $\bm{\tau}$ is the generalized forces acting on the body. We call the matrices
-pre-multiplying $\dot{\bm{\nu}}$ and $\bm{\nu}$ for $\bm{M}_{RB}^{CG}$ and $\bm{C}_{RB}^{CG}$ respectively.
+pre-multiplying $\dot{\bm{\nu}}$ and $\bm{\nu}$ for $\bm{M}_{RB}^{CG}$ and $\bm{C}_{RB}^{CG}$ respectively. In general one might want to consider the equations of motion
+about a different point than the center of gravity. The twist of the body is
+related to the twist in the new point by the matrix \cite{fossen2021}
 
+\begin{align}
+        \bm{\nu}_{ng}^{b} =
+    \underbrace{
+        \begin{bmatrix}
+            \I_{3} & -[\bm{r}_{ng}^{b}]_{\times} \\
+            \bm{0} & \I_{3}
+        \end{bmatrix}
+    }_{\bm{H}(\bm{r}_{ng}^b)}
+    \bm{\nu}_{nb}^{b},
+    \label{eq:fossen_H}
+\end{align}
+
+where $\bm{r}_{ng}^{b}$ is the position of the center of gravity relative to the
+new point and $\bm{\nu}_{nb}^{b}$ is the twist in the new point. By
+pre-multiplying \autoref{eq:rigid_body_eom_cg} by the inverse of the matrix
+in \autoref{eq:fossen_H} we get the equations of motion about the new point:
+\begin{align}
+    \underbrace{
+        \bm{H}^T(\bm{r}_{bg}^b) \bm{M}_{CG}^{RB} \bm{H}(\bm{r}_{bg}^b)
+    }_{\bm{M}_{RB}}
+    \dot{\bm{\nu}}_{nb}^b
+    + \underbrace{
+        \bm{H}^T(\bm{r}_{bg}^b) \bm{C}_{CG}^{RB} \bm{H}(\bm{r}_{bg}^b)
+    }_{\bm{C}_{RB}}
+    \bm{\nu}_{nb}^b
+    = \underbrace{
+        \bm{H}^T(\bm{r}_{bg}^b)
+    \bm{\tau}
+    }_{\bm{\tau}_{b}^b}.
+\end{align}
+$\bm{\tau}_{b}^b$ is the generalized forces acting on the body about the new
+point.
 
 % -----------------------------------------------------------------------------
-\subsection{Hydrodynamics}
+\section{Hydrodynamics}
+
+Hydrodynamics is the study of the forces acting on a body in a fluid. The forces
+can be modeled as potential forces, giving rise to the added mass matrix, and
+damping forces. This chapter will focus on how to model the hydrodynamic forces
+acting on a rigid body in a fluid.
+
+\subsection{Added Mass}
 
 When a rigid body accelerates in a fluid, the fluid is accelerated as well. 
 This contributes to the total kinetic energy of the system \cite{antonelli2018}.
@@ -77,10 +119,10 @@ the added mass matrix is approximated as the zero-frequency added mass matrix
 \begin{align}
     \bm{M}_A(\omega) &\approx \bm{M}_A(0)
 \end{align}
-Under this assumption, the fluikinetic energy of the fluid $T_A$ is approximated
+Under this assumption, the kinetic energy of the fluid $T_A$ is approximated
 as
 \begin{align}
-    T_a &= \frac{1}{2}\bm{\nu}^T\bm{M}_A\bm{\nu} & \dot{\bm{M}_A} &= \bm{0}
+    T_a &= \frac{1}{2}\bm{\nu}^T\bm{M}_A\bm{\nu} & \dot{\bm{M}_A} &= \bm{0},
 \end{align}
 where $\bm{\nu}$ is the twist velocity of the rigid body. For underwater 
 vehicles at low speed where the the shape has three planes of symmetry, the
@@ -88,7 +130,7 @@ added mass matrix can be approximated as \cite{fossen2021}:
 \begin{align}
     \bm{M}_A = \bm{M}_A^T =
     \operatorname{diag}(X_{\dot{u}}, Y_{\dot{v}}, Z_{\dot{w}},
-        K_{\dot{p}}, M_{\dot{q}}, N_{\dot{r}})
+        K_{\dot{p}}, M_{\dot{q}}, N_{\dot{r}}).
 \end{align}
 According to \cite{fossen2021} this approximation is found to be quite good for
 many applications due to the fact that the off diagonal coupling terms are small
@@ -115,6 +157,15 @@ can be approximated as \cite{fossen2021}:
  M_{\dot{q}} &= -\frac{1}{5}\frac{(b^2-a^2)^2(\alpha_0-\beta_0)}{2(b^2-a^2) + (b^2+a^2)(\beta_0-\alpha_0)}m&
  N_{\dot{r}} &= M_{\dot{q}} \nonumber
 \end{align}
+
+\subsection{Damping}
+
+There are several phenomena that contribute to the damping of a rigid body in
+a fluid. Among these are potential damping, skin friction, wave drift damping,
+damping due to vorex shedding and lifting forces \cite{fossen2021}.
+
+% mention that the damping matrix is a function of the velocity of the body
+% mention that for UVMs the damping matrix can be assumed decoupled for all links.
 
 {
     \color{red}
