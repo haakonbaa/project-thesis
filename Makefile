@@ -30,9 +30,11 @@ small: $(SRC_DIR)/$(PROJECT).tex
 
 diff: $(SRC_DIR)/$(PROJECT).tex
 	# create a diff between
+	rm -rf $(BUILD_DIR_ROOT)/diff
 	mkdir -p $(BUILD_DIR_ROOT)/diff/v1
 	mkdir -p $(BUILD_DIR_ROOT)/diff/v2
-	git --work-tree=$(BUILD_DIR_ROOT)/diff/v1 checkout $(DIFF_OLD) -- src
+	#git --work-tree=$(BUILD_DIR_ROOT)/diff/v1 checkout $(DIFF_OLD) -- src
+	cd $(BUILD_DIR_ROOT)/diff && git clone -b $(DIFF_OLD) ../.. v1
 	#cp -r src $(BUILD_DIR_ROOT)/diff/v1;
 	# to create a diff between two commits
 	#git --work-tree=$(BUILD_DIR_ROOT)/diff/v2 checkout $(DIFF_NEW) -- src;
