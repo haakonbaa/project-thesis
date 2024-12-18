@@ -1,3 +1,4 @@
+\iffalse
 The project considers nonlinear control methods for lightweight underwater vehicle-manipulator
 systems (light-UVMSs) including both remotely operated vehicles (ROVs) with a lightweight
 base, and articulated intervention-AUVs (AIAUVs) (e.g. underwater snake robots) which are
@@ -36,3 +37,34 @@ UVMS.
 \item Do a simulation study comparing velocity- and acceleration-level task-priority control
 methods for light-UVMS.
 \end{enumerate}
+\fi
+
+The project considers nonlinear control methods for lightweight underwater vehicle-manipulator
+systems (light-UVMSs) including both remotely operated vehicles (ROVs) with a lightweight
+base, and articulated intervention-AUVs (AIAUVs) (e.g. underwater snake robots) which are
+lightweight and with no separate base. Lightweight UVMSs are increasingly taken into use in
+several industries, including harbor control and environmental monitoring.
+Light-UVMSs reveal a control challenge which so far has been neglected: to efficiently
+control a light-UVMS one should consider the coupling effects between its base and arm
+motions. When the arm moves, this will make the base move as well, and vice versa. This
+coupling is not so clear for large work-class ROVs where the motion of the heavy base can be
+assumed almost decoupled from the motion of the arm. The coupling effects appear partly due
+to both reaction forces and hydrostatic forces.
+Since UVMSs possess both thrusters and a manipulator arm, these vehicles are considered
+kinematically redundant. This kinematic redundancy makes them suitable for task-priority control, 
+which can be categorized into velocity-level and acceleration-level approaches. Velocity-level 
+control does not explicitly consider all the coupling effects between the
+manipulator and the base motions, whereas acceleration-level control does. However, one must
+have a sufficiently accurate mathematical model of the UVMS to correctly apply acceleration-
+level control. Currently there is a lack of research that compares these methods for underwater
+vehicles, especially related to experimental validation.
+Physical experiments involving NTNU's "Eelume 500" AIAUV have been planned for the spring of 2025. These experiments will explore and extend the state-of-the-art within task-priority control of light-UVMSs. To safely conduct these experiments, a thorough simulation study must be precede them, and software must be developed that allows implementing and simulating various task-priority control methods, with as low a sim-to-real-gap as possible. The task of this assignment is therefore to implement a simulation framework, suitable for simulating dynamics of underwater vehicles. The simulation framework should allow the implementation of model-based controllers, by exposing the system dynamic matrices for use in control synthesis. This framework shall be used to compare and implement various task-priority approaches for lightweight UVMS both theoretically and in simulation. The task-priority methods to compare should be decided by the student after a literature review.
+\begin{enumerate}
+\item Do a literature survey on task-priority control for underwater vehicle manipulator
+systems (UVMS), describe the state-of-the-art, with a focus on works with experimental
+results.
+\item Create a simulation framework for low-level (model-based) task priority control of light-UVMSs.
+\item Do a simulation study comparing velocity- and acceleration-level task-priority control
+methods for light-UVMSs.
+\end{enumerate}
+\newpage

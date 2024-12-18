@@ -7,7 +7,7 @@ LATEX_ARGS = -output-directory=$(BUILD_DIR) -interaction=errorstopmode \
 BIBER_ARGS = --output-directory $(BUILD_DIR)
 
 # Diff settings
-DIFF_OLD = "latest"
+DIFF_OLD = "main"
 DIFF_NEW = "HEAD"
 
 # Targets
