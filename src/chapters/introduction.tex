@@ -10,7 +10,79 @@ as well as an outline of the subsequent chapters.
 \section{Motivation}
 
 % ---------------------------------------------------------- Litterature Review
+\newpage
 \section{Literature Review}
+
+\iffalse
+Some of the first works on task-priority control were presented in
+\cite{hanafusa1981}. The work presents a method for controlling redundant
+manipulators by introducing a task-priority control scheme allowing for two
+tasks to be executed simultaneously. The framework was used to control a 7-DOF
+manipulator, tracking a desired end-effector position and constant arm posture.
+The work was further extended in \cite{nakamura1987}, by describing more complete
+formlation and introducing the use of potential functions for obstacle avoidance.
+
+Building on the work of \cite{hanafusa1981}, \cite{nakamura1987} and others,
+\cite{siciliano1991} presents a method for extending the task-prirority framework
+to any finite number of tasks. The formulation is recursive, allowing for efficient
+computation of the joint velocities. The method is used in a simulation study 
+to control a 7-DOF planar manipulator with three tasks, including obstacle avoidance.
+The problem of algorithmic and kinematic singularities are presented in \cite{chiaverini1997}.
+Kinematic singularities can give arbitrary large joint velocities, while algorithmic
+singularities can cause strict priority to be violated. The work presents a method
+for avoiding such kinematic singularities by introducing versions of damped pseudo-inverse
+matrices.
+
+A dissadvantage of the frameworks presented up to this point is that they all assume that
+the kinematics and dynamics of the mainpulator are decoupled. In the general case,
+and especially for underwater vehicle-manipulator systems (UVMSs), this is not the case.
+Addressing this problem, \cite{khatib1987} presents a framework for redundancy resolution
+at the dynamic level. This method looks at the dynamics of each task, use a feedback-linearization
+technique and the concept of dynamically consistent generalized inverses \cite{khatib1995} to ensure
+strict priority. In this case, a tradeoff between the assumption that the dynamics and
+kinematics are coupled are traded with the necessity for accurate dynamic model knowledge.
+The work is further improved upon in \cite{khatib2004} where the method is extended to
+sucessfully deal with an arbitrary number of tasks. The method is used
+to controll a very high DOF humanioid robot in simulation.
+
+A study of the stability of kinematic-level priority-based control schemes for
+redundant manipulators is done in \cite{antonelli2009}. Using a Lyapunov-based
+approach, the work states several
+sufficient conditions for the stability in terms of control gains and task design.
+The work does however assume decoupled kinematics and dynamics, and cannot be 
+directly applied to UVMSs without assumptions on the relative speed of the robot dynamics.
+
+Task-prirority control directly applied to UVMSs is presented in \cite{antonelli1998}.
+The work uses a kinematic-level task-priority control scheme to control a 6-DOF
+articulated underwater vehicle (AUV) with a 3-DOF planar manipulator arm. Although
+the simulation study shows promising results, the work does not consider the dynamics
+of the system.
+
+In recent years methods taking dynamics into account have been developed. In \cite{basso2020},
+a method where control Lyapunov function based quadratic programs are used to solve
+control allocation, dynamic control and redundancy resolution for redundant robotic systems,
+is presented. Because of the challenges of disturbances and modelling errors in the dynamics of UVMSs \cite{iversflaten2022}
+presents a dynamic controller based on sliding mode control. A simulation study was
+conducted showing the effectiveness of the proposed method.
+\fi
+
+Some of the earliest works on task-priority control were introduced in \cite{hanafusa1981}. This study proposed a method for controlling redundant manipulators through a task-priority control scheme, enabling the simultaneous execution of two tasks. Specifically, the framework was applied to a 7-DOF manipulator tasked with tracking a desired end-effector position while maintaining a constant arm posture. This approach was later expanded in \cite{nakamura1987}, where a more comprehensive formulation was presented, along with the introduction of potential functions for obstacle avoidance.
+
+Building on the foundations laid by \cite{hanafusa1981}, \cite{nakamura1987}, and others, the work in \cite{siciliano1991} extended the task-priority framework to accommodate an arbitrary number of tasks. The proposed formulation employs a recursive approach, enabling efficient computation of joint velocities. A simulation study demonstrated the method's effectiveness in controlling a 7-DOF planar manipulator performing three tasks, including obstacle avoidance. The challenges posed by algorithmic and kinematic singularities were later addressed in \cite{chiaverini1997}. While kinematic singularities can lead to excessively large joint velocities, algorithmic singularities may cause strict task priority to break down. To mitigate these issues, the study introduced damped pseudo-inverse matrices as a solution.
+
+One notable limitation of the frameworks discussed so far is their assumption of decoupled kinematics and dynamics. However, in real-world systems—particularly in underwater vehicle-manipulator systems (UVMSs)—this assumption does not hold. To address this limitation, \cite{khatib1987} proposed a framework for redundancy resolution at the dynamic level. This approach incorporates task dynamics, employs feedback linearization techniques, and utilizes dynamically consistent generalized inverses \cite{khatib1995} to maintain strict task priority. However, this method relies heavily on an accurate dynamic model, which can be a tradeoff for addressing coupled dynamics and kinematics. The framework was further extended in \cite{khatib2004}, allowing it to handle an arbitrary number of tasks effectively. In this work, a high-DOF humanoid robot was successfully controlled in a simulation study.
+
+Stability analysis of kinematic-level priority-based control schemes for redundant manipulators was conducted in \cite{antonelli2009}. Using a Lyapunov-based approach, the study provided sufficient conditions for stability based on control gains and task design. However, the proposed method assumes decoupled kinematics and dynamics, making it less directly applicable to UVMSs without additional assumptions regarding the relative speeds of robot dynamics and inverse kinematics.
+
+A task-priority control scheme specifically applied to UVMSs was presented in \cite{antonelli1998}. This work employed a kinematic-level task-priority control approach to control a 6-DOF articulated underwater vehicle (AUV) equipped with a 3-DOF planar manipulator arm. While the simulation results were promising, the study did not account for the system's dynamics.
+
+In recent years, approaches that incorporate dynamic considerations have been developed. For example, \cite{basso2020} introduced a method that uses control Lyapunov function-based quadratic programming to address control allocation, dynamic control, and redundancy resolution in redundant robotic systems. Given the challenges posed by disturbances and modeling inaccuracies in UVMS dynamics, \cite{iversflaten2022} proposed a dynamic controller based on sliding mode control. A simulation study demonstrated the effectiveness of this method in handling these challenges.
+Regarding physical experiments on UVMSs, there seem to be a lack of research that
+compares the performance of the proposed task-priority control methods in a real-world setting.
+
+
+
+% Might want to include some articles on vehicle modeling?
 
 % ----------------------------------------------------------------- Assumptions
 \section{Assumptions}
@@ -25,9 +97,10 @@ as well as an outline of the subsequent chapters.
 
 The main contributions as presented in this thesis are as follows:
 \begin{itemize}
-    \item \emph{}
-    \item \emph{A Python library for mathematically modelling underwater vehicles.
-    Allowing for rapid prototyping of models and fast simulations in C++.}
+    \item \emph{A Python library for generating dynamic models of UVMSs, allowing
+        for rapid prototyping of models.}
+    \item \emph{A simulator in C++, together with a set of task-priority controllers
+        ,using the generated models to simulate the behaviour of UVMSs.}
     \item \emph{A simulation study comparing velocity and acceleration level
         task-priority control methods for light-UVMS.}
 \end{itemize}
