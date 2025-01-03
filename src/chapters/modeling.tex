@@ -2,6 +2,11 @@
 
 \section{Rigid Body Kinetics}
 
+Before modeling a general underwater vehicle manipulator system with multiple links, we will model
+a rigid body under water. As it turns out, the equations describing the motion
+of a system with multiple links is very much related to the dynamic properties
+of each individual link. This will become apparent when describing the mass
+and coreolis matrices, as well as forces acting on the general system.
 Consider a rigid body with mass $m$. Denote by $\bm{v}_{ng}^b$ the bodys translational
 velocity, and by $\bm{\omega}_{ng}^b$ its angular velocity in the
 body-fixed frame. We can find the kinetic energy of the body by integrating the
@@ -92,10 +97,260 @@ in \autoref{eq:fossen_H} we get the equations of motion about the new point:
     }_{\bm{\tau}_{b}^b}.
 \end{align}
 $\bm{\tau}_{b}^b$ is the generalized forces acting on the body about the new
-point.
+point. The $\bm{M}_{RB}$ and $\bm{C}_{RB}$ matrices are given by \cite{fossen2021}:
+\begin{subequations}
+\begin{align}
+    \bm{M}_{RB} &= \begin{bmatrix}
+        m \I_3 & - m [\bm{r}_{bg}^b]_{\times} \\
+        m [\bm{r}_{bg}^b]_{\times} & \bm{I}_g^b - m [\bm{r}_{bg}^b]_{\times}[\bm{r}_{bg}^b]_{\times}
+    \end{bmatrix} \\
+    \bm{C}_{RB} &= \begin{bmatrix}
+        m [\bm{\omega}_{nb}^b] & -m [\bm{\omega}_{nb}^b]_{\times}[\bm{r}_{bg}^b]_{\times} \\
+        m [\bm{\omega}_{nb}^b]_{\times}[\bm{r}_{bg}^b]_{\times} & 
+        -m \cross{\bm{r}_{bg}^b} \cross{\bm{\omega}_{bg}^b} \cross{\bm{r}_{bg}^b} -
+        \cross{\bm{I}_g^b \bm{\omega}_{bg}^b}
+    \end{bmatrix}. \label{eq:crb}
+\end{align}
+\end{subequations}
+It can be shown that the coreolis matrix in \autoref{eq:crb} ca be equivallenty
+written as \cite{sagatun1991}:
+\begin{align}
+    \bm{C}_{RB}(\bm\nu) = \begin{bmatrix}
+        \bm{0}_{3 \times 3} & 
+        -\left[\bm{M}_{11}\bm{v}_{nb}^{b} + \bm{M}_{12}\bm{\omega}_{nb}^b \right]_{\times} \\
+        -\left[\bm{M}_{11}\bm{v}_{nb}^{b} + \bm{M}_{12}\bm{\omega}_{nb}^b \right]_{\times} &
+        -\left[\bm{M}_{21}\bm{v}_{nb}^{b} + \bm{M}_{22}\bm{\omega}_{nb}^b \right]_{\times}
+    \end{bmatrix},
+\end{align}
+Where $\bm{M}_{ij}$ are the $3 \times 3$ submatrices of the $\bm{M}_{RB}$ matrix.
+
+% -----------------------------------------------------------------------------
+\newpage
+\section{AIAUV Modeling}
+
+A comprehensive description of the kinematics and dynamics of articulated
+underwater robots can be found in \cite{schmidt2018}. Much of this section
+will be based on the work of \cite{schmidt2018}, as well as an unpublished
+first draft of this paper. The following chapter will use notation adopted from
+\cite{from2014}.
+
+\subsection{Forward Kinematics}
+\label{sec:forward_kinematics}
+Consider a system with $n$ rigid links connected together with $n-1$ joints
+of one parameter. The links are indexed from $1$ to $n$, where the base
+has index $1$ and the tail has index $n$. Let
+\begin{align}
+    \bm{H}_i = \begin{bmatrix}
+        \bm{R}_i^n & \bm{p}_{ni}^n \\
+        \bm{0}^T & 1
+    \end{bmatrix} \in \SE,
+\end{align}
+be the homogeneous transformation matrix from frame $i$, attached to link $i$,
+to the inertial NED\footnote{Atleast approximately inertial} frame $n$. Define
+\begin{align}
+    \bm{A}_i(\theta_i) &\in \SE & i &= 1, 2, \ldots, n-1
+\end{align}
+as the transformation matrix from frame $i+1$ to frame $i$ such that
+\begin{align}
+    \bm{H}_{i+1} &= \bm{H}_i \bm{A}_i(\theta_i).
+\end{align}
+Expanding this recursive relation gives
+\begin{align}
+    \bm{H}_i &= \bm{H}_1 \bm{A}_1(\theta_1) \bm{A}_2(\theta_2) \cdots \bm{A}_{i-1}(\theta_{i-1}).
+\end{align}
+We define $\bm{\theta} = \begin{bmatrix}\theta_1 & \theta_2 & \cdots & \theta_{n-1}\end{bmatrix}^T$
+and
+\begin{align}
+    \bm{A}_{i:j}(\bm{\theta}) =
+    \begin{cases}
+        \bm{A}_i(\theta_i) \bm{A}_{i+1}(\theta_{i+1}) \cdots \bm{A}_{j-1}(\theta_{j-1}) & i \leq j \\
+        \bm{0}_{4 \times 4} & i > j \\
+    \end{cases}
+\end{align}
+It can be shown that the transformation matrix $\bm{A}_{i}(\theta_i)$ can be
+expressed as \cite{murray2017}:
+\begin{align}
+    \bm{A}_i(\theta_i) &= \bm{A}_i(0) \exp([\bm{a}_i]_{\wedge} \theta_i), \label{eq:expmap}
+\end{align}
+for some $\bm{a}_i \in \R^6$. Combining \autoref{eq:expmap} with \autoref{eq:body_twist_def}, the body twist
+of link $i+1$ relative to the inertial frame $n$ can be expressed as
+\begin{subequations}
+\begin{align}
+    \bm{\nu}_{n(i+1)}^{i+1} &= \left(\bm{H}_{i+1}^n\right)^{-1} \dot{\bm{H}}_{i+1}^n \\
+    &= \bm{A}_{1:i}^{-1}(\bm\theta) \bm{H}_1^{-1} \dot{\bm{H}}_{1} \bm{A}_{1:i}(\bm\theta) \nonumber \\
+    &+ \bm{A}_{2:i}^{-1}(\bm\theta) [\bm{a}_1]_{\wedge}\bm{A}_{2:i}(\bm\theta) \dot{\theta}_1 \nonumber \\
+    &\vdots \label{eq:body_twist_def} \\
+    &+ \bm{A}_{i:i}^{-1}(\bm\theta) [\bm{a}_{i-1}]_{\wedge}\bm{A}_{i:i}(\bm\theta) \dot{\theta}_{i} \nonumber \\
+    &+ [\bm{a}_{i}]_{\wedge} \dot{\theta}_i. \nonumber
+\end{align}
+\end{subequations}
+Defining $\bm{\nu}_i := \bm{\nu}_{ni}^i$ as the body twist of link $i$ relative to
+the inertial frame $n$, \autoref{eq:body_twist_def} can be written recursively as:
+\begin{subequations}
+    \label{eq:body_twist_recursive}
+\begin{align}
+    \bm{\nu}_{1} &= \bm{\nu}_{n1}^1 \\
+    \bm{\nu}_{i+1} &= \Ad^{-1}(\bm{A}_i(\theta_i)) \bm{\nu}_i + [\bm{a}_i]_{\wedge} \dot{\theta}_i.
+\end{align}
+\end{subequations}
+This motivates the definition of the link Jacobians that are defined in a way
+such that
+\begin{align}
+    \bm{\nu}_{i} = \bm{J}_i(\bm{\theta}) \bm{\zeta}
+\end{align}
+where the body twist $\bm{\nu}$ and the joint velocities $\dot{\bm{\theta}}$ are
+collected in the vector $\bm{\zeta} \in \R^{6+(n-1)}$
+\begin{align}
+    \bm{\zeta} = \begin{bmatrix}\bm{\nu} \\ \dot{\bm{\theta}}\end{bmatrix}.
+\end{align}
+From \autoref{eq:body_twist_recursive} we can see that the link Jacobians can be
+defined as
+\begin{subequations}
+    \label{eq:link_jacobian}
+\begin{align}
+    \bm{J}_1(\bm{\theta}) &= \begin{bmatrix} \bm{I}_6 & \bm{0}_{6 \times n} \end{bmatrix} \\
+        \bm{J}_{i+1}(\bm{\theta}) &= \begin{bmatrix}
+            \Ad^{-1}(\bm{A}_{1:i}(\bm{\theta}))  &  \Ad^{-1}(\bm{A}_{2:i}(\bm{\theta})) \bm{a}_1 &
+            \cdots & \bm{a}_i & \bm{0}_{6 \times (n-i)}
+        \end{bmatrix} \\
+    &= \Ad^{-1}(\bm{A}_i(\theta_i)) \bm{J}_i(\bm{\theta}) + \begin{bmatrix}
+        \bm{0}_{6 \times (5+i)} & \bm{a}_i & \bm{0}_{6 \times (n-i)}
+    \end{bmatrix}.
+\end{align}
+\end{subequations}
+The derivatives of the link jacobians are needed for control purposes and
+calculation of the coreolis matrix. By differentiating \autoref{eq:link_jacobian}
+with respect to time, we get
+\begin{subequations}
+\begin{align}
+    \dot{\bm{J}}_1(\bm{\theta}) &= \bm{0}_{6\times(6+n)} \\
+    \dot{\bm{J}}_{i+1}(\bm{\theta},\dot{\bm{\theta}}) &= -[\bm{a}_i]_{\wedge} \Ad^{-1}(\bm{A}_i(\theta_i))
+        \bm{J}_i(\bm{\theta})\dot{\theta}_i + \Ad^{-1}(\bm{A}_i(\theta_i))\dot{\bm{J}}_i(\bm{\theta},\dot{\bm{\theta}}) \\
+    &= -[\bm{a}_i]_{\wedge}\bm{J}_{i+1}(\bm{\theta})\dot{\theta}_i +
+        \Ad^{-1}(\bm{A}_i(\theta_i))\dot{\bm{J}}_i(\bm{\theta},\dot{\bm{\theta}}).
+\end{align}
+\end{subequations}
+
+\subsection{Differential Kinematics}
+Consider the same system as described in the introduction of \autoref{sec:forward_kinematics}.
+The configuration of the entire system is described by the vector $\bm{\xi} \in \R^{5+n}$
+\begin{align}
+    \bm{\xi} &= \begin{bmatrix}\bm{\eta} \\ \bm{\theta} \end{bmatrix} &
+        \bm{\eta} &= \begin{bmatrix}\bm{p}_{nb}^n \\ \bm{\Theta}_{nb} \end{bmatrix}
+\end{align}
+Velcity
+\begin{align}
+    \bm{\zeta} &= \begin{bmatrix}\bm{\nu}_{nb}^b \\ \dot{\bm{\Theta}}\end{bmatrix} &
+        \bm{\nu}_{nb}^b = \begin{bmatrix} \bm{v}_{nb}^b \\ \bm{\omega}_{nb}^b\end{bmatrix}
+\end{align}
+\begin{subequations}
+\begin{align}
+    \dot{\bm{\xi}} &= \bm{J}_{\xi}(\bm{\Theta}_{nb})\bm{\zeta} \\
+    \bm{J}_{\xi}(\bm{\Theta}_{nb}) &= \begin{bmatrix}
+        \bm{R}_{nb}(\bm{\Theta}_{nb}) & \bm{0}_{3 \times 3} & \bm{0}_{3 \times n} \\
+        \bm{0}_{3 \times 3} & \bm{T}_{nb}(\bm{\Theta}_{nb}) & \bm{0}_{3 \times n} \\
+        \bm{0}_{n \times 3} & \bm{0}_{n \times 3} & \I_{n}
+    \end{bmatrix}
+\end{align}
+\end{subequations}
+\cite{fossen2021}:
+\begin{align}
+    \bm{T}_{nb}(\bm{\Theta}_{nb}) = \begin{bmatrix}
+        1 & \sin\phi \tan\theta & \cos \phi \tan \theta \\
+        0 & \cos \phi & -\sin\phi \\
+        0 & \sin \phi / \cos \theta & \cos \phi / \cos \theta
+    \end{bmatrix}
+\end{align}
+
+\subsection{Dynamics}
+
+For each link, $i$, defined in the previoud subchapter, we associate the following
+properties: $\bm{M}_i \in \R^{6 \times 6}$ is the inertia matrix of the link,
+$\bm{J}_i \in \R^{6 \times (6+n)}$ is the link jacobian, $\bm{C}_i \in \R^{6 \times 6}$
+is the coreolis matrix, $\bm{D}_i \in \R^{6 \times 6}$ is the damping matrix and
+$\bm{g}_i \in \R^{6}$ is the gravitational forces and buoyancy forces and moments.
+The damping matrix will be discussed in \autoref{sec:hydrodynamics}.
+$\bm{M}_i$ takes into account the added mass of the link
+\begin{align}
+    \bm{M}_i &= \bm{M}_{RB,i} + \bm{M}_{A,i},
+\end{align}
+where $\bm{M}_{RB,i}$ is the rigid body inertia matrix of the link and $\bm{M}_{A,i}$
+is the added mass matrix of the link. As a result of the added mass, the coreolis
+matrix is given by
+\begin{align}
+    \bm{C}_i &= \bm{C}_{RB,i} + \bm{C}_{A,i}
+\end{align}
+where $\bm{C}_{RB,i}$ is the coreolis matrix of the rigid body and $\bm{C}_{A,i}$
+is a function of the added mass matrix. The added mass matrix and the damping matrix
+for each link is the topic of \autoref{sec:hydrodynamics}. The dynamics of the
+system described in the previous subchapter can be modeled as
+\cite{from2014}:
+\begin{align}
+    \bm{M}(\bm{\theta})\dot{\bm{\zeta}} +
+        \bm{C}(\bm{\theta}, \bm{\zeta}) \bm{\zeta} +
+        \bm{D}(\bm{\theta}, \bm{\zeta}) \bm{\zeta} +
+        \bm{g}(\bm{\xi}) =
+        \bm{\tau} + \bm{\tau}_{\mathrm{ext}}.
+\end{align}
+$\bm{M}(\bm{\theta}) \in \R^{(6+n)\times(6+n)}$  is the inertia matrix of the
+system, $\bm{C}(\bm{\theta}, \bm{\zeta}) \in \R^{(6+n)\times(6+n)}$ is the
+coreolis matrix, $\bm{D}(\bm{\theta}, \bm{\zeta}) \in \R^{(6+n)\times(6+n)}$ is
+the damping matrix, $\bm{g}(\bm{\xi}) \in \R^{6+n}$ is the gravitational forces
+and buoyancy forces and moments acting on the system, $\bm{\tau} \in \R^{n}$ is the generalized
+forces acting on the system as a result of the actuators,
+and $\bm{\tau}_{\mathrm{ext}} \in \R^{6+n}$ is the
+generalized external forces acting on the system. Let $\bm{J}_{i}(\bm{\theta})$
+be the link jacobians as defined in \autoref{eq:link_jacobian}.
+The inertia matrix
+can be expressed as
+\begin{align}
+    \bm{M}(\bm{\theta}) &= \sum_{i=1}^{n} \bm{J}_{i}^T(\bm{\theta}) \bm{M}_i \bm{J}_{i}(\bm{\theta}).
+\end{align}
+Note that if the jacobians are full rank, the inertia matrix is positive definite.
+Furthermore, it is allways symmetric. The coreolis matrix can be expressed as
+\begin{align}
+    \bm{C}(\bm{\theta}, \bm{\zeta}) &=
+    \sum_{i=1}^{n} \bm{J}_{i}^T(\bm{\theta}) \bm{M}_i \dot{\bm{J}}_{i}(\bm{\theta},\dot{\bm{\theta}})
+    -\bm{J}_{i}^T(\bm{\theta}) \bm{C}_i(\bm{\theta},\bm{\zeta})_i \bm{J}_{i}(\bm{\theta}) \bm{\zeta}.
+\end{align}
+The damping matrix can be expressed as
+\begin{align}
+    \bm{D}(\bm{\theta}, \bm{\zeta}) &=
+    \sum_{i=1}^{n} \bm{J}_{i}^T(\bm{\theta}) \bm{D}_i(\bm{\theta},\bm{\zeta}) \bm{J}_{i}(\bm{\theta}).
+\end{align}
+and the gravitational forces and buoyancy forces and moments can be expressed as
+\begin{align}
+    \bm{g}(\bm{\xi}) &=
+    \sum_{i=1}^{n} \bm{J}_{i}^T(\bm{\theta}) \bm{g}_i(\bm{\xi}).
+\end{align}
+The control inputs $\bm{u}$ are mapped to the generalized forces $\bm{\tau}$ by
+the actuator configuration matrix $\bm{B}(\bm{\theta})$ as
+\begin{align}
+    \bm{\tau} &= \bm{B}(\bm{\theta}) \bm{u} &
+    \bm{B}(\bm{\theta}) &= \begin{bmatrix}
+        \bm{J}_1^T(\bm{\theta}) \bm{B}_1 & \cdots & \bm{J}_n^T(\bm{\theta}) \bm{B}_n
+    \end{bmatrix},
+\end{align}
+where $\bm{B}_i$ is the actuator configuration matrix for link $i$. For a simple
+thruster configuration, such as in the case where all thrusters are fixed with
+respect to some link, the $\bm{B}_i$ matrices are constant and can be expressed
+as
+\begin{align}
+    \bm{B}_i &= \begin{bmatrix}
+        \bm{\beta}_{t,i,1} & \cdots & \bm{\beta}_{t,i,m} \\
+        \bm{r}_{t,i,1} \times \bm{\beta}_{t,i,1} & \cdots & \bm{r}_{t,i,m} \times \bm{\beta}_{t,i,m}
+    \end{bmatrix},
+\end{align}
+where $\bm{\beta}_{t,i,j}$ is the direction of the thrust and $\bm{r}_{t,i,j}$
+is the point of application of the thrust.
+
+
+
+
 
 % -----------------------------------------------------------------------------
 \section{Hydrodynamics}
+\label{sec:hydrodynamics}
 
 Hydrodynamics is the study of the forces acting on a body in a fluid. The forces
 can be modeled as potential forces, giving rise to the added mass matrix, and
@@ -210,6 +465,7 @@ damping matrix for a cylinder as \cite{schmidt2018}:
 where $C_D$, $v_{ref}$, $\beta$, $\gamma$ are constants to be determined.
 
 % -----------------------------------------------------------------------------
+\iffalse
 \section{UMS Kinematics}
 
 The following chapter will descibe the kinematics of an underwater vehicle
@@ -250,3 +506,4 @@ described by a set of $n$
         \item Inspiration from Henrik?
     \end{itemize}
 }
+\fi

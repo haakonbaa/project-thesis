@@ -284,12 +284,13 @@ takes a vector $\bm{p}_{bo}^b$, the vector from the body-origin $b$ to the point
 in the $b$ frame, and transforms it to the vector $\bm{p}_{io}^i$, the vector from
 the inertial-frame origin $i$ to the point $o$ described in the $i$ frame.
 
+
 Consider an element $\bm{H}_{b}^i \in \SE$, which is a transformation from frame
 $b$ to frame $i$. The body-fixed twist $\bm{\nu}_{ib}^b$ and the inertial-frame
 twist $\bm{\nu}_{ib}^i$ are defined respectively as
 \begin{subequations}
 \begin{align}
-    [\bm{\nu}_{ib}^b]_{\wedge} &= \left(\bm{H}_{b}^i\right)^{-1}\dot{\bm{H}}_{b}^i \\
+    [\bm{\nu}_{ib}^b]_{\wedge} &= \left(\bm{H}_{b}^i\right)^{-1}\dot{\bm{H}}_{b}^i \label{eq:body_twist_def}\\
     [\bm{\nu}_{ib}^i]_{\wedge} &= \dot{\bm{H}}_{b}^i \left(\bm{H}_{b}^i\right)^{-1}. 
 \end{align}
 \end{subequations}
@@ -297,6 +298,7 @@ twist $\bm{\nu}_{ib}^i$ are defined respectively as
 Similar to $\SO$, the Lie algebra $\se$ is closely related to $\SE$ by the exponential
 map. The Lie algebra $\se$ is defined as
 \begin{subequations}
+    \label{eq:se3_algebra}
 \begin{align}
     \se &= \left\{ \begin{bmatrix}
         \bm{\Omega} & \bm{v} \\
@@ -305,7 +307,9 @@ map. The Lie algebra $\se$ is defined as
     \in \R^{4 \times 4}
     \middle|
     \bm{\Omega} \in \so, \, \bm{v} \in \R^3
-    \right\}
+    \right\} \\
+    \left[ \Gamma_1, \Gamma_2 \right]_{\se} &= \Gamma_1 \Gamma_2 - \Gamma_2 \Gamma_1 \\
+    \exp &: \se \to \SE
 \end{align}
 \end{subequations}
 We define the matrix representation of the ad-operator
