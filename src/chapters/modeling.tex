@@ -130,7 +130,7 @@ Where $\bm{M}_{ij}$ are the $3 \times 3$ submatrices of the $\bm{M}_{RB}$ matrix
 
 A comprehensive description of the kinematics and dynamics of articulated
 underwater robots can be found in \cite{schmidt2018}. Much of this section
-will be based on the work of \cite{schmidt2018}, as well as an unpublished
+will be based on the work of \cite{from2014} and \cite{schmidt2018}, as well as an unpublished
 first draft of this paper. The following chapter will use notation adopted from
 \cite{from2014}.
 
@@ -233,16 +233,20 @@ with respect to time, we get
 
 \subsection{Differential Kinematics}
 Consider the same system as described in the introduction of \autoref{sec:forward_kinematics}.
-The configuration of the entire system is described by the vector $\bm{\xi} \in \R^{5+n}$
+The configuration of the entire system can be described by the vector $\bm{\xi} \in \R^{5+n}$,
 \begin{align}
     \bm{\xi} &= \begin{bmatrix}\bm{\eta} \\ \bm{\theta} \end{bmatrix} &
-        \bm{\eta} &= \begin{bmatrix}\bm{p}_{nb}^n \\ \bm{\Theta}_{nb} \end{bmatrix}
+        \bm{\eta} &= \begin{bmatrix}\bm{p}_{nb}^n \\ \bm{\Theta}_{nb} \end{bmatrix} &
+            \bm{p}_{nb}^n &= \begin{bmatrix}x^n \\ y^n \\ z^n \end{bmatrix} &
+        \bm{\Theta}_{nb} &= \begin{bmatrix}\phi \\ \theta \\ \psi \end{bmatrix}.
 \end{align}
-Velcity
+where $\bm{\eta} \in \R^6$ is a collection of the the NED position and Euler angles of the base
+link and $\bm{\theta} \in \R^{n-1}$ is the vector of joint angles. The body twist $\bm{\nu}_{nb}^b \in R^6$ of the base link as well as the joint velocities $\dot{\bm{\theta}} \in \R^{n-1}$ are collected in the vector $\bm{\zeta} \in \R^{5+n}$:
 \begin{align}
-    \bm{\zeta} &= \begin{bmatrix}\bm{\nu}_{nb}^b \\ \dot{\bm{\Theta}}\end{bmatrix} &
-        \bm{\nu}_{nb}^b = \begin{bmatrix} \bm{v}_{nb}^b \\ \bm{\omega}_{nb}^b\end{bmatrix}
+    \bm{\zeta} &= \begin{bmatrix}\bm{\nu}_{nb}^b \\ \dot{\bm{\theta}}\end{bmatrix} &
+        \bm{\nu}_{nb}^b = \begin{bmatrix} \bm{v}_{nb}^b \\ \bm{\omega}_{nb}^b\end{bmatrix}.
 \end{align}
+The differential kinematics of the system can be expressed as \cite{fossen2021}:
 \begin{subequations}
 \begin{align}
     \dot{\bm{\xi}} &= \bm{J}_{\xi}(\bm{\Theta}_{nb})\bm{\zeta} \\
@@ -253,7 +257,10 @@ Velcity
     \end{bmatrix}
 \end{align}
 \end{subequations}
-\cite{fossen2021}:
+Where $\bm{R}_{nb}(\bm{\Theta}_{nb})$ is the rotation matrix from the body-fixed frame to the NED frame
+using the Euler angles $\bm{\Theta}_{nb}$ as described in \autoref{sec:bp:so3_se3}.
+The $\bm{T}_{nb}(\bm{\Theta}_{nb})$ matrix transforms the body fixed angular velocities
+of the base link to the derivative of the Euler angles and is given by \cite{fossen2021}:
 \begin{align}
     \bm{T}_{nb}(\bm{\Theta}_{nb}) = \begin{bmatrix}
         1 & \sin\phi \tan\theta & \cos \phi \tan \theta \\

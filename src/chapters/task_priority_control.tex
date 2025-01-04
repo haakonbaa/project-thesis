@@ -9,6 +9,7 @@ including singularity robustness, for real-world robotic applications.
 % -----------------------------------------------------------------------------
 \section{Introduction}
 \label{sec:tpc_intro}
+\iffalse
 Task priority control addresses the problem of managing multiple objectives simultaneously.
 Each task is assigned a specific priority level, and the goal is to prioritize the higher-level
 tasks my minimizing its error while balancing the lower-priority objectives. The
@@ -16,7 +17,28 @@ following sections are based largely on the work of \cite{antonelli2009}, which 
 an excellent overview of the topic in terms of velocity level control. The concepts
 of velocity-, acceleration- and force-level control are to be defined in the
 following sections.
-{\color{red}Jeg synes du kan være mer tydelig i introduksjonen her. Hvordan virker prioritetsnivåene i task-priority control? Hva betyr det egentlig at en task har høyere prioritet enn en annen?}
+\fi
+
+Task priority control addresses the problem of managing multiple objectives simultaneously in a robotic system. It is a widely used methodology for handling redundancy in robots, enabling them to perform several tasks at once without compromising the executing of higher-priority objectives. Understanding the concept of tasks, their prioritization, and how multiple tasks interact is essential for ounderstanding the fundamentals of task priority control.
+
+A task referes to a specific objective or goal that a robotic system aims to acheive. Tasks can represent a wide variety of objectives, such as moving an end-effector to a desired position and orientation, maintaining a specific posture, avoiding joint limits, preventing collisions, or controlling specific velocities or accelerations at specific points. The tasks are typically described using functions, which map system states to task-specific outputs. These outputs are then often compared to desired values to determine the error and guide the control system towards acheiving the task.
+
+The prioritization of tasks is a key aspect of task-priority control. When a task is assigned a higher priority, it must be executed without being disturbed or compromised by lower-priority tasks. This means that the control system must balance the objectives of multiple tasks, ensuring that the higher-priority tasks are acheived while still allowing the lower-priority tasks to be executed. In practice, higher priority tasks are resolved first, and the remaining degrees of freedom are used to acheive the lower-priority tasks. For example, a robotic manipulator tasked with avoiding obstacles might prioritize obstacle avoidance over maintaining an exact end-effector position.
+
+In the following sections, we will develop the mathematical foundations of task-priority control, exploring the concepts of velocity-, acceleration-, and force/torque-level control.
+
+% -----------------------------------------------------------------------------
+\section{Kinematic-level Redundancy Resolution}
+
+Kinematic-level redundancy resolution is a fundamental concept in task-priority control.
+It is one of the first methods proposed for handling redundancy in a task-priority framework.
+A fundamental assumption in kinematic-level redundancy resolution is that there
+allready exists a controller that can generate the desired joint velocities $\dot{\bm{q}}_d(t)$.
+Considerations around this assumption will be discussed in later sections.
+The mathematical concepts introduced in this section are presented in introductory
+chapters in many of the articles and books on task-priority control, such as
+\cite{hanafusa1981}, \cite{nakamura1987}, \cite{khatib1987}. An overview is
+presented in \cite{chiaverini1997}.
 
 \subsection{Velocity-level control}
 
@@ -106,6 +128,7 @@ and the pseudoinverse matrices have been proposed. The methods include substitut
 the pseudoinverse with the transpose of the Jacobian, and using augmented null space
 projections.
 \begin{subequations}
+    \label{eq:augmented_null_space}
 \begin{align}
     \bm{N}_i^{\#} := \bm{N}_{1\cdots i-1} := \mathbb{I} - \bm{J}_{1\cdots i-1}^+ \bm{J}_{1\cdots i-1} \\
     \bm{J}_{1\cdots i-1} := \begin{bmatrix}
@@ -134,13 +157,9 @@ The variants discussed in \cite{antonelli2009} are summarized in the following t
     \caption{Task priority control variants. Table from \cite{antonelli2009}}
 \end{table}
 
-{
-    \color{red}
-    \begin{itemize}
-        \item Se kommentar om sucessive vs augmented null space projections
-    \end{itemize}
-}
-
+Using the successive method, task velocities are progressively projected into the null space of higher-priority tasks by recursively multiplying null space projection matrices. In contrast, the augmented method constructs a single null space projection matrix by stacking the task Jacobians of all higher-priority tasks and then computing the pseudoinverse of this stacked matrix. This distinction is illustrated in \autoref{eq:augmented_null_space}.
+It is important to emphasize that these two approaches are not equivalent. Null space projection matrices are generally not commutative, which means the successive method can yield a more conservative null space projection, whereas the augmented method often results in a less conservative projection, offering increased flexibility for lower-priority tasks.
+From a computational perspective, the successive method is typically more efficient because it recursively computes the null space projection matrices. Conversely, the augmented method demands the computation of the pseudoinverse of a potentially large stacked Jacobian matrix, which is computationally more intensive.
 
 % -----------------------------------------------------------------------------
 \subsection{Acceleration-level control}
@@ -187,7 +206,88 @@ and doing this for each task, one can get the desired joint accelerations for ea
 This method is called acceleration-level task priority control. The method can
 be generalized to multiple tasks by using the same methods as presented in \autoref{sec:tpc_intro}.
 
-\subsection{Optimization Objective as Tasks}
+\subsection{Low level joint-space control}
+
+The aforementioned methods are, as previously mentioned, based on the assumption
+that a controller exists that can generate the desired joint velocities $\dot{\bm{q}}_d(t)$.
+In practice, this is not always the case, and there is certainly no guarentee that
+$\dot{\bm{q}}_d(t) = \dot{\bm{q}}(t)$ at all times. This introduces the need for a
+low-level joint-space controller that aims to track the desired joint velocities.
+A simple PD controller is a simple way to achieve this;
+\begin{align}
+    \bm{\tau}_d(t) :=  \bm{\tau}_{\mathrm{PD}}(t) =
+        \bm{K}_p \left( \bm{q}_d(t) - \bm{q}(t) \right)
+        + \bm{K}_d \left( \dot{\bm{q}}_d(t) - \dot{\bm{q}}(t)\right)
+\end{align}
+Here, $\bm{K}_d$ and $\bm{K}_p$ are positive definite gain matrices to be tuned
+and $\bm{\tau}_d(t)$ is the desired generalized torques acting on the robot. A
+thruster allocation algorithm can be used to convert the generalized torques to
+actuator commands \cite{fossen2021}. $\bm{q}_d(t)$, and in the case of
+acceleration-level control, $\dot{\bm{q}}_d(t)$, can be calculated by
+integrating the desired joint velocities or accelerations
+\begin{subequations}
+\begin{align}
+    \bm{q}_d(t) = \int_0^t \dot{\bm{q}}_d(t) \, d\tau \\
+    \dot{\bm{q}}_d(t) = \int_{0}^t \ddot{\bm{q}}_d(t)\, d\tau.
+\end{align}
+\end{subequations}
+A simple way to improve this controller is to compensate for the gravity-, and
+optionally the buoyancy-forces acting on the robot. This can be done by adding
+a feedforward term to the controller:
+\begin{align}
+    \bm{\tau}_d(t) = \bm{\tau}_{\mathrm{PD+}}(t) :=
+    \bm{\tau}_{\mathrm{PD}}(t) + \bm{g}(\bm{q}(t)),
+\end{align}
+where $\bm{g}(\bm{q}(t))$ is the gravity vector acting on the robot. Assuming the
+model is on the very general form
+\begin{align}
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{g}(\bm{q}) = \bm{\tau},
+\end{align}
+substituting $\bm{\tau}$ with $\bm{\tau}_d(t)$ gives
+\begin{subequations}
+\begin{align}
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{g}(\bm{q}) &= \bm{\tau}_{\mathrm{PD+}}(t) \\
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} &= \bm{\tau}_{\mathrm{PD}}(t),
+\end{align}
+\end{subequations}
+effectively compensating for the gravity forces acting on the robot. Integral
+action can be added to the controller to improve tracking performance, but this
+should be done with caution as integral action can introduce instability in the
+system. This is espcially true in cases where some form of integral action is
+present in the redundancy resolution algorithm \cite{fossen2021}.
+
+It is also possible to use a feedback linearization technique to achieve the
+desired joint velocities. By assuming that the robot's dynamic model is known,
+one can set the desired joint acceleration by formulating the generalized
+torques $\bm{\tau}$ as
+\begin{align}
+    \bm{\tau} = \bar{\bm{M}}(\bm{q}) \ddot{\bm{q}}_d + \bar{\bm{C}}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bar{\bm{g}}(\bm{q}) \label{eq:torque_feedback_lin}
+\end{align}
+where $\bar{\bm{M}}(\bm{q})$, $\bar{\bm{C}}(\bm{q}, \dot{\bm{q}})$ and
+$\bar{\bm{g}}(\bm{q})$ are approximations of the robot's mass matrix, Coriolis
+and centripetal forces (and damping), and gravity vector, respectively. Assuming
+that the approximations are exact, and that the torque is feasible, one can easily
+see that the joint acceleration is given by:
+\begin{subequations}
+\begin{align}
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{g}(\bm{q}) &= 
+    \bar{\bm{M}}(\bm{q}) \ddot{\bm{q}}_d + \bar{\bm{C}}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bar{\bm{g}}(\bm{q}) \\
+    \implies \bm{M}(\bm{q}) \ddot{\bm{q}} &= \bm{M}(\bm{q}) \ddot{\bm{q}}_d
+\end{align}
+\end{subequations}
+Since the mass matrix is positive definite, there is an equivalence between the
+desired joint acceleration and the actual joint acceleration. In practice
+however, the approximations are not exact, and the torque might be innacurate or
+not feasible due to actuator limits. Furthermore, the estimated joint velocities
+and accelerations might be noisy, making the input torques innacurate.
+
+
+
+% -----------------------------------------------------------------------------
+\section{Dynamic-level Redundancy Resolution}
+
+% -----------------------------------------------------------------------------
+\section{Optimization Objective as Tasks}
 
 Tasks can be generalized from the form presented in \autoref{eq:def_task}, where
 the main objective of the task is to make a certain point attached to the robot
@@ -205,52 +305,8 @@ also shown in \cite{siciliano1991} where a 7-DOF planar manipulator has a path
 following task with priority 1 and a circular obstacle avoidance task with priority 2.
 Although this method does not use a dissipative function in the optimization objective.
 
-\subsection{Joint level control}
-
-In \autoref{sec:tpc_intro}, one of the assumptions was that a controller exists
-that can generate the desired joint velocities $\dot{\bm{q}}(t)$. Using a
-mathematical model of the robot on the form
-\begin{align}
-    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{G}(\bm{q}) = \bm{\tau}
-\end{align}
-one can set the desired joint acceleration by formulating the input generalized
-torques $\bm{\tau}$ as
-\begin{align}
-    \bm{\tau} = \bar{\bm{M}}(\bm{q}) \ddot{\bm{q}}_d + \bar{\bm{C}}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bar{\bm{G}}(\bm{q}) \label{eq:torque_feedback_lin}
-\end{align}
-where $\bar{\bm{M}}(\bm{q})$, $\bar{\bm{C}}(\bm{q}, \dot{\bm{q}})$ and
-$\bar{\bm{G}}(\bm{q})$ are approximations of the robot's mass matrix, Coriolis
-and centripetal forces (and damping), and gravity vector, respectively. Assuming
-that the approximations are exact, and that the torque is feasible, one can easily
-see that the joint acceleration is given by:
-\begin{subequations}
-\begin{align}
-    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{G}(\bm{q}) &= 
-    \bar{\bm{M}}(\bm{q}) \ddot{\bm{q}}_d + \bar{\bm{C}}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bar{\bm{G}}(\bm{q}) \\
-    \implies \bm{M}(\bm{q}) \ddot{\bm{q}} &= \bm{M}(\bm{q}) \ddot{\bm{q}}_d
-\end{align}
-\end{subequations}
-Since the mass matrix is positive definite, there is an equivalence between the
-desired joint acceleration and the actual joint acceleration. In practice
-however, the approximations are not exact, and the torque might not be feasible.
-Furthermore, the estimated joint velocities and accelerations might be noisy.
-This is however a well studied problem, and there are several methods for
-dealing with this. Among the most common and simplest methods are feedback control
-with PID controllers. Substituting $\ddot{\bm{q}}_d$ in \autoref{eq:torque_feedback_lin}
-by a simple PD controller, one can get a simple feedback controller:
-{
-    \color{red}
-    \begin{itemize}
-        \item Write more about the feedback controller. This one is model-based
-            in general we want to use a model-free PD(+) controller to track
-            the desired joint velocities. desired joint accelerations can be
-            integrated to get desired joint velocities.
-    \end{itemize}
-}
 
 
-% -----------------------------------------------------------------------------
-\section{Dynamic level control}
 
 % -----------------------------------------------------------------------------
 \section{Singularity Robustness}
@@ -324,20 +380,3 @@ The VDLSI is defined as
 where $\lambda_{max}^2$ and $\varepsilon$ are parameters that can be tuned. $\lambda_{max}$
 determines the maximum damping factor and $\varepsilon$ determines a threshold for when
 to start damping the pseudoinverse based on how close the singular values are to zero.
-
-{
-\color{red}
-}
-{
-    \color{red}
-    \begin{enumerate}
-        \item Task variable as a gradient of an obtimization objective.
-        \item force-level? dynamic-level?
-        \item The method presented above is not "optimal"
-        \item Mention that the system can loose one degree of freedom (titanic angle), When this happens the mass matrix of the system becomes singular
-and the system loses a degree of freedom. It is therefore impossible to determine
-the derivative of the Euler angles.
-        \item Don't konw if i want to talk about the "Variable damped least squares inverse with low isotropic damping"
-    \end{enumerate}
-}
-
