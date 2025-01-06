@@ -12,6 +12,10 @@
 \usepackage[style=ieee]{biblatex}      % IEEE citation style
 \usepackage{setspace}
 \usepackage[en-US]{datetime2}
+\usepackage{listings}                  % For code listings
+\usepackage{xcolor}                    % Required for specifying colors by name
+
+
 
 \hypersetup{
     % Sets the displayed title
@@ -57,3 +61,87 @@
 \newcommand{\I}{\mathbb{I}}
 % matrix version of cross product
 \newcommand{\cross}[1]{[ #1 ]_{\times}}
+
+% Code snippets settings ------------------------------------------------------
+% Change the name of the list of listings
+\renewcommand{\lstlistlistingname}{List of Code Examples}
+
+% Use the inconsolata font for monospaced text (listings)
+\usepackage{inconsolata}
+\renewcommand{\ttdefault}{zi4}
+
+
+% Define a custom style
+\lstdefinestyle{custompython}{
+    backgroundcolor=\color{gray!0},   % Light gray background
+    commentstyle=\color{green!60!black}, % Green comments
+    keywordstyle=\color{blue},        % Blue keywords
+    stringstyle=\color{orange},       % Orange strings
+    basicstyle=\ttfamily\footnotesize,% Monospaced font, smaller size
+    inputencoding=utf8,
+    breakatwhitespace=false,          
+    breaklines=true,                 
+    captionpos=b,                     
+    keepspaces=true,                 
+    numbers=left,                     % Line numbers on the left
+    showspaces=false,                 
+    showstringspaces=false,           
+    showtabs=false,                   
+    tabsize=4,
+    rulecolor=\color{black!20},        % Light gray frame
+    language=Python
+}
+
+\lstdefinestyle{customcpp}{
+    language=C++,                  % Set language to C++
+    backgroundcolor=\color{gray!0},% Light gray background
+    commentstyle=\color{green!50!black}, % Greenish comments
+    keywordstyle=\color{blue},     % Blue keywords
+    stringstyle=\color{orange},    % Orange strings
+    basicstyle=\ttfamily\footnotesize, % Monospaced small font
+    rulecolor=\color{black!30},    % Light gray frame
+    tabsize=4,                     % Tab size
+    showstringspaces=false,        % Don't show spaces in strings
+    showspaces=false,              % Don't show spaces
+    showtabs=false,                % Don't show tabs
+    breaklines=true,               % Enable line breaking
+    breakatwhitespace=false,       % Break lines at any character
+    numbers=left,                  % Line numbers on the left
+    numbersep=10pt,                % Spacing between numbers and code
+    captionpos=b,                  % Place captions below the code
+    escapeinside={(*@}{@*)},       % Escape LaTeX code inside listings
+    extendedchars=true,            % Allow extended characters
+    keepspaces=true                % Keep spaces in code
+}
+
+\lstdefinestyle{customtxt}{
+    backgroundcolor=\color{gray!0},% Light gray background
+    basicstyle=\ttfamily\footnotesize, % Monospaced small font
+    rulecolor=\color{black!30},    % Light gray frame
+    tabsize=4,                     % Tab size
+    showstringspaces=false,        % Don't show spaces in strings
+    showspaces=false,              % Don't show spaces
+    showtabs=false,                % Don't show tabs
+    breaklines=true,               % Enable line breaking
+    breakatwhitespace=false,       % Break lines at any character
+    numbers=left,                  % Line numbers on the left
+    numbersep=10pt,                % Spacing between numbers and code
+    captionpos=b,                  % Place captions below the code
+    extendedchars=true,            % Allow extended characters
+    keepspaces=true                % Keep spaces in code
+}
+
+\lstset{
+    extendedchars=true,
+    inputencoding=utf8,
+    framerule=1pt,
+    frame=single, %leftline,
+    numberstyle=\color{gray},
+    tabsize=4,
+    lineskip=-1pt,
+    literate=
+        {ϕ}{{$\phi$}}1
+        {θ}{{$\theta$}}1
+        {ψ}{{$\psi$}}1
+        {τ}{{$\tau$}}1
+}

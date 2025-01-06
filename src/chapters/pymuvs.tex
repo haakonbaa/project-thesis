@@ -4,6 +4,7 @@
 % -----------------------------------------------------------------------------
 \section{Introduction}
 
+\iffalse
 \pymuvs{ }is a Python library for mathematically modelling underwater vehicles. The
 library is designed to be modular and easy to use, and is built on top of NumPy
 \cite{numpy} and SymPy \cite{sympy}. By defining the a set of links, as well as
@@ -27,52 +28,485 @@ The library, written in Python, allows for quick and easy prototyping of
 models, with the flexibility to add or remove links and transformations.
 The library is open-source and can be found at
 \url{https://github.com/haakonbaa/pymuvs}. 
+\fi
+
+\pymuvs{} is a Python library designed for the mathematical modeling of 
+underwater vehicles. Built on top of NumPy~\cite{numpy} and SymPy~\cite{sympy}, 
+the library emphasizes modularity, usability, and flexibility. By defining a 
+set of links along with their associated physical properties—such as mass, 
+inertia, volume, linear drag, quadratic drag, external forces, and 
+transformations between links—\pymuvs{} can compute a symbolic representation 
+of the system dynamics in the form:
+
+\begin{align}
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{C}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} +
+    \bm{D}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{g}(\bm{q}) = \bm{J}^T(\bm{q}) \bm{B} \bm{u},
+    \label{eq:pymuvs:eom}
+\end{align}
+
+where the matrices $\bm{M}$, $\bm{C}$, $\bm{D}$, $\bm{g}$, $\bm{J}$, and 
+$\bm{B}$ are computed symbolically and can be leveraged for system simulation. 
+These matrices represent the mass, Coriolis, damping, gravitational and buoyancy
+forces, Jacobian and input matrices, respectively.
+This symbolic representation is particularly valuable when designing 
+model-based controllers that rely on system dynamics expressed in or derived 
+from \autoref{eq:pymuvs:eom}.
+
+The library also supports exporting symbolic expressions and the entire system 
+model to C++ code. This feature enables real-time simulations and significantly 
+accelerates computational performance, which is essential for time-critical 
+applications.
+
+Written in Python, \pymuvs{} facilitates rapid prototyping and iterative 
+development, allowing users to easily add or remove links and transformations. 
+The library is open-source and publicly available at 
+\url{https://github.com/haakonbaa/pymuvs}.
+
 
 
 % -----------------------------------------------------------------------------
 \subsection{Motivation and Importance}
 
+The primary motivation behind the development of \pymuvs{} was to create a 
+robust tool for modeling the dynamics of underwater vehicles. Currently, there 
+is a notable lack of software that allows users to intuitively define the 
+parameters of an underwater vehicle and directly obtain the model matrices 
+required for model-based control. While open-source simulators, such as Gazebo, 
+streamline the mathematical modeling and simulation of these systems, they do 
+not explicitly provide the system matrices. This limitation arises because such 
+simulators fundamentally do not rely on system matrices for simulation 
+purposes. \pymuvs{} addresses this gap by directly computing the model matrices 
+from a general parameterization of underwater vehicle-manipulator systems (UVMSs).  
+
+One key advantage of generating these matrices symbolically is their 
+portability across programming languages. SymPy, the symbolic mathematics 
+library used by \pymuvs{}, includes built-in functionality for exporting 
+symbolic expressions to languages such as C, Fortran, and MATLAB/Octave. This 
+greatly reduces the effort required to produce efficient C/C++ code for 
+evaluating these matrices, a process demonstrated successfully in this project.  
+
+As previously mentioned, physical experiments are planned with the Eelume 500 
+robot. Since the interface for this UVMS is implemented in C++, it is a natural 
+choice to also implement the control algorithms in the same programming 
+language. Furthermore, task-priority controllers are computationally intensive, 
+requiring frequent matrix inversions, null-space projections, and Jacobian 
+calculations. Using an efficient, compiled language such as C++ offers 
+significant advantages, including low-level optimization capabilities, static 
+typing, and access to an extensive set of libraries. These factors strongly 
+justify the need for a tool capable of generating model matrices directly in 
+C++.  
+
+In addition to model matrices, the \pymuvs{} library also generates the 
+Jacobians required for task-priority control algorithms. Jacobians represent 
+derivatives of transformation functions, necessitating some form of symbolic 
+differentiation. \pymuvs{} seamlessly integrates this functionality, enabling 
+the computation of transformation matrices and Jacobians directly from a 
+defined model. This feature significantly reduces the complexity of both 
+defining and evaluating Jacobians in C++. 
+
+% -----------------------------------------------------------------------------
+\section{Architecture and Design}
+
+The \pymuvs{} library is structured into four submodules in addition to the 
+primary package, referred to as \emph{pymuvs}. These four submodules are as follows:
+
 \begin{itemize}
-\item Why pymuvs was created
-    \begin{itemize}
-    \item Gazebo can be used to simulate underwater vehicles, but it does not provide
-    the model matrices needed for model-based control.
-    \item Existing simulators existed, but they were either written in Rust, which
-    is not as widely used as Python, or they were not as flexible as we wanted.
-    \end{itemize}
-\item Features
-\item Assumptions
-\item C++ code generation
-\item The goal is to develop a controller on the eelume robot, this needs to be fast
-which facilitates the development of controllers in a microcontroller environment
-as well as puts restrictions
+    \item \emph{se3}: This submodule contains an implementation of a symbolic $\SE$ 
+        class, which is extensively utilized in the core \emph{pymuvs} package.
+        This submodule relies heavily on the mathematics presented in
+        \autoref{sec:bp:so3_se3} and \autoref{sec:bp:se3}.
+
+    
+    \item \emph{util}: This submodule provides utility functions for matrix 
+        manipulation, such as the skew-operator, time differentiation, and derivatives 
+        of matrices and vectors. Additionally, it facilitates the generation of C++ 
+        code from classes defined in the \emph{tp} submodule.
+    
+    \item \emph{tp}: This submodule defines classes for tasks $\bm{\sigma}$ and 
+        desired tasks $\bm{\sigma}_d$.
+    
+    \item \emph{codegen}: This submodule includes tools for generating C++ source 
+        and header files from dynamic models, as well as task Jacobians and their derivatives.
 \end{itemize}
 
+The \pymuvs{} package serves as the central component of the library, and uses
+much of the mathematics presented in \autoref{ch:modeling} and \autoref{sec:lagrange}.
+The  subsequent sections will provide an overview of each submodule, along with 
+brief examples demonstrating fundamental use cases. It is important to note 
+that this overview does not encompass all functionalities of the library but 
+aims to highlight the most essential features of each submodule.
+
+
+
+% ------------------------------------------------------------------------- se3
+\subsection{The \texttt{se3} Submodule}
+
+The \texttt{se3} submodule provides functionality for working with the special Euclidean group $SE(3)$. Built on top of \texttt{SymPy}, it offers tools for generating elements of $SE(3)$ from symbolic expressions, as well as operations for computing the inverse and performing multiplication of these elements.
+
+A simple example demonstrating the creation of a rotation matrix from Euler angles is shown below:
+
+\begin{lstlisting}[style=custompython,
+    caption={Creating a rotation matrix from euler angles.},
+    label={lst:usage:se30}]
+import sympy as sp
+from pymuvs.se3 import rot_x, rot_y, rot_z
+
+phi, theta, psi = sp.symbols('ϕ θ ψ')
+T = rot_z(psi) @ rot_y(theta) @ rot_x(phi)
+\end{lstlisting}
+
+The resulting symbolic output of this example is shown here:
+
+\begin{lstlisting}[style=customtxt,
+    caption={Output of \autoref{lst:codegen}.},
+    label={lst:usage:se3}]
+SE3(rotation=Matrix([
+    [cos(θ)*cos(ψ), sin(θ)*sin(ϕ)*cos(ψ) - sin(ψ)*cos(ϕ), sin(θ)*cos(ψ)*cos(ϕ) + sin(ψ)*sin(ϕ)],
+    [sin(ψ)*cos(θ), sin(θ)*sin(ψ)*sin(ϕ) + cos(ψ)*cos(ϕ), sin(θ)*sin(ψ)*cos(ϕ) - sin(ϕ)*cos(ψ)],
+    [ -sin(θ), sin(ϕ)*cos(θ), cos(θ)*cos(ϕ)]]),
+translation=Matrix([[0], [0], [0]])
+\end{lstlisting}
+
+These examples illustrate how to create a variable $T \in \SO$ representing a pure rotation using Euler angles. The resulting transformations can be composed to construct arbitrary transformations. This group representation is extensively used in other modules of the library to define and manipulate transformations between links in a robotic model.
+
+
+
+% --------------------------------------------------------------------- util
+\subsection{The \texttt{util} Submodule}
+
+The \emph{util} submodule provides utility functions for matrix operations, including tools for time differentiation and Jacobian computation. One notable function is \texttt{skew}, which calculates the skew-symmetric matrix of a vector. Additionally, the module includes functions such as \texttt{time\_diff\_matrix} for computing the time derivative of matrices and \texttt{jacobian} for differentiating vectors with respect to other vectors.
+
+An example demonstrating the time differentiation of a matrix is shown below:
+
+\begin{lstlisting}[style=custompython,
+    caption={Time differentiation of a matrix.},
+    label={lst:usage:util:time_diff_matrix}]
+import sympy as sp
+from pymuvs.util import time_diff_matrix
+
+x, y = sp.symbols('x y')
+dx, dy = sp.symbols('dx dy')
+
+A = sp.Matrix([[x, x**2], [y, y**2]])
+dA = time_diff_matrix(A, [x, y], [dx, dy])
+print(dA)
+\end{lstlisting}
+The output of this operation is as follows:
+\begin{lstlisting}[style=customtxt,
+    caption={Output of \autoref{lst:usage:util:time_diff_matrix}.},
+    label={lst:usage:util:time_diff_matrix:out}]
+Matrix([[dx, 2*dx*x], [dy, 2*dy*y]])
+\end{lstlisting}
+
+These examples illustrate how to compute the time derivative of a matrix, an operation frequently used in the core of the \emph{pymuvs} package.
+
+Another example demonstrates how to compute the Jacobian of a vector with respect to another vector:
+
+\begin{lstlisting}[style=custompython,
+    caption={Computing the Jacobian of a vector.},
+    label={lst:usage:util:jacobian}]
+import sympy as sp
+from pymuvs.util import jacobian
+
+x, y, z = sp.symbols('x y z')
+q = sp.Matrix([x, y, z])
+
+v = sp.Matrix([[x + y**2 + x*z], [x*y*z]])
+dv = jacobian(v, q)
+print(dv)
+\end{lstlisting}
+
+The resulting output is as follows:
+
+\begin{lstlisting}[style=customtxt,
+    caption={Output of \autoref{lst:usage:util:jacobian}.},
+    label={lst:usage:util:jacobian:out}]
+Matrix([[z + 1, 2*y, x], [y*z, x*z, x*y]])
+\end{lstlisting}
+
+
+These examples highlight the functionality of the \texttt{jacobian} function, which is widely utilized in the library. It is worth noting that the implementations of these functions are concise, as the heavy computational work is delegated to \texttt{SymPy}. The functions are designed to handle common input types gracefully and include robust error checking to ensure reliability.
+
+
+% --------------------------------------------------------------------- tp
+\subsection{The \texttt{tp} submodule}
+The \emph{tp} submodule contains the two classes \texttt{Task} and \texttt{DesiredTask}
+which are used to represent tasks and desired tasks in a task-priority controller.
+The \texttt{Task} class contains symbolic representations of the familiar $\bm{f}(\bm{q})$,
+$\bm{J}(\bm{q})$ and $\dot{\bm{J}}(\bm{q},\dot{\bm{q}})$ matrices, while the \texttt{DesiredTask} class contains
+$\bm{\sigma}_d(t)$, $\dot{\bm{\sigma}}_d(t)$ and $\ddot{\bm{\sigma}}_d(t)$. 
+These classes are used in the \emph{codegen} submodule to generate C++ code for
+the task Jacobians and their derivatives. An example of how to use these classes
+is shown below.
+
+\begin{lstlisting}[style=custompython,
+    caption={Creating a task from a function.},
+    label={lst:usage:tp:task}]
+import sympy as sp
+from pymuvs.tp import fn_to_task
+
+x, y = sp.symbols('x y')
+dx, dy = sp.symbols('dx dy')
+f = sp.Matrix([x**2*y**2, x**2+y**2])
+task = fn_to_task(f, [x, y], [dx, dy])
+print(task.f)
+print(task.J)
+print(task.dJ)
+\end{lstlisting}
+\begin{lstlisting}[style=customtxt,
+    caption={Output of \autoref{lst:usage:tp:task}.},
+    label={lst:usage:tp:task:out}]
+Matrix([[x**2*y**2], [x**2 + y**2]])
+Matrix([[2*x*y**2, 2*x**2*y], [2*x, 2*y]])
+Matrix([[2*dx*y**2 + 4*dy*x*y, 4*dx*x*y + 2*dy*x**2], [2*dx, 2*dy]])
+\end{lstlisting}
+\autoref{lst:usage:tp:task} and \autoref{lst:usage:tp:task:out} shows how to create a task from a symbolic
+matrix. We can see that the task object contains the symbolic representation of
+the task, as well as the Jacobian and its time derivative. This is very useful
+when generating C++ code for a task-priority controller.
+
+\begin{lstlisting}[style=custompython,
+    caption={Generating a desired task from a function.},
+    label={lst:usage:tp:task_des}]
+import sympy as sp
+from pymuvs.tp import fn_to_task_desired
+
+t = sp.symbols('t')
+f = sp.Matrix([sp.sin(t), sp.cos(t)])
+sigma_d = fn_to_task_desired(f, t)
+print(sigma_d.sigma)
+print(sigma_d.dsigma)
+print(sigma_d.ddsigma)
+\end{lstlisting}
+\begin{lstlisting}[style=customtxt,
+    caption={Output of \autoref{lst:usage:tp:task_des}.},
+    label={lst:usage:tp:task_des:out}]
+Matrix([[sin(t)], [cos(t)]])
+Matrix([[cos(t)], [-sin(t)]])
+Matrix([[-sin(t)], [-cos(t)]])
+\end{lstlisting}
+\autoref{lst:usage:tp:task_des} and \autoref{lst:usage:tp:task_des:out} shows
+how to create a desired task from a symbolic matrix. We observe that the desired
+task object contains the symbolic representation of the desired task, as well as
+its first and second time derivative.
+
+
+
+
+
+% --------------------------------------------------------------------- codegen
+\subsection{The codegen submodule}
+The \texttt{codegen} module is used to generate C++ code from a \texttt{Model}. The module
+uses the \texttt{sympy.ccode} function to generate C code from
+each expression in every matrix and combines them into a header and a source
+file. The \texttt{Eigen} library \cite{eigen3} is used to represent the matrices.
+This library is chosen for its performance, ease of use and wide adoption in the
+robotics community. The library is header-only, meaning that it is easy to
+include in other projects.
+
+
+\begin{lstlisting}[style=customcpp,
+    caption={Automatically generated C++ code from a model.},
+    label={lst:codegen}]
+#pragma once
+#include <Eigen/Dense>
+#include <math.h>
+#include <stdexcept>
+
+/*
+    A mathematical model of a robot on the form
+        M(q) * ddq + C(q, dq) dq + D(q, dq) dq + g(q) = Jf(q) B u(z)
+    z is a specified vector of inputs to the robot.
+
+    M, C and D are n x n matrices
+    J  is a  Nj x Nn  matrix
+    Jf is a  Nn x Nb  matrix
+    B  is a  Nb x Nm  matrix
+    u  is a  Nm x  1  vector
+
+    The values of nb, nj and m might be hard to calculate before the model is
+    created.
+    
+ q = [xn, yn, zn, ϕ, θ, ψ, a1, a2, a3, a4]
+dq = [dxn, dyn, dzn, dϕ, dθ, dψ, da1, da2, da3, da4]
+ z = [τ1, τ2, τ3, τ4, f1s, f1p, f1b, f1t, f2s, f2p, f2b, f2t]
+ u = [f1p, f1s, f1b, f1t, f2p, f2s, f2b, f2t, τ1, τ2, τ3, τ4]
+*/
+
+namespace Model {
+
+constexpr int Nn  = 10;
+constexpr int Nj  = 18;
+constexpr int Nb  = 22;
+constexpr int Nm  = 12;
+constexpr int Nz  = 12; // number of inputs
+constexpr int Nt  = 3;  // number of transforms
+
+Eigen::MatrixXd M(Eigen::VectorXd q);
+Eigen::MatrixXd C(Eigen::VectorXd q, Eigen::VectorXd dq);
+Eigen::MatrixXd D(Eigen::VectorXd q, Eigen::VectorXd dq);
+Eigen::VectorXd g(Eigen::VectorXd q);
+Eigen::MatrixXd J(Eigen::VectorXd q);
+Eigen::MatrixXd Jf(Eigen::VectorXd q);
+Eigen::MatrixXd B();
+Eigen::VectorXd u(Eigen::VectorXd z);
+Eigen::MatrixXd Ju(Eigen::VectorXd z);
+Eigen::VectorXd T0_to_b(Eigen::VectorXd q, Eigen::VectorXd x_0);
+Eigen::VectorXd T1_to_b(Eigen::VectorXd q, Eigen::VectorXd x_1);
+Eigen::VectorXd T2_to_b(Eigen::VectorXd q, Eigen::VectorXd x_2);
+Eigen::VectorXd ddq(Eigen::VectorXd q, Eigen::VectorXd dq, Eigen::VectorXd z);
+Eigen::VectorXd u_to_z(Eigen::VectorXd u);
+
+
+} // namespace Model
+\end{lstlisting}
+
+\autoref{lst:codegen} shows the header file generated from a model. The output
+file contains functions for computing the various matrices in the model, as well
+as transformations between the reference frame of the links to the base frame,
+begin the functions named \texttt{T0\_to\_b}, \texttt{T1\_to\_b} and \texttt{T2\_to\_b}.
+The header file also contains contains a small description of the dynamic model,
+as well as some of the \texttt{constexpr} values denoting the dimensions of the
+matrices in the model. Using implicit sizes for the matrices allows for easier
+development of the code using the model, as it does not need to be templated on
+the size of the matrices if the model is changes. This does however come at the
+cost of some debugging capabilities, as the compiler will not catch dimension
+mismatches between matrices at compile time. This was a trade-off made to make
+the code using the model more readable and easier to develop.
+
 % -----------------------------------------------------------------------------
-\section{Architectural Design}
+\section{Usage and Examples}
 
-\subsection{Overall Structure}
-
-\subsection{Core Modules}
-
-\subsection{Dependencies}
-
-% -----------------------------------------------------------------------------
-\section{Implementation details}
+The core of the \pymuvs{} library are the classes \texttt{Link}, \texttt{Robot}, \texttt{Model},
+and \texttt{Wrench}. These classes are used to define the physical properties of the
+robot, as well as the transformations between the links. The \texttt{Link} class
+represents a single link in the robot, and its properties are mass, inertia matrix,
+volume, added mass matrix, linear damping matrix, quadratic damping matrix, center of
+mass, center of buoyancy and a set of wrenches acting on the link. All of these
+properties are defined numeric values, exept for the wrenches being its own class.
+Consisting of a set of links, and the transformations
+between them, the \texttt{Robot} class is used to define the UVMS. The \texttt{Robot} class
+has the \texttt{get\_model} method, which returns a \texttt{Model} object representing the
+dynamics of the robot. This function is arugably the most important and computationally
+demanding function in the library, as it computes the symbolic representation of the
+robot dynamics.
 
 \subsection{Model Definition}
 
-\subsection{Customization}
+To demonstrate the usage of the \pymuvs{} library, a simple example is provided.
+Consider a simple pendulum with a mass $m$ and length $l$. Assume that we are in
+a East-North-Up coordinate system and that the pendulum is free to move in the
+North-Up plane. The pendulum is affected by a gravitational force $g$. Putting
+it all together, the model of the pendulum can be defined in \pymuvs{} as follows.
+
+\begin{lstlisting}[style=custompython,
+    caption={Dynamic model of a simple pendulum in \pymuvs{}.},
+    label={lst:usage:pendulum}]
+import sympy as sp
+import numpy as np
+
+from pymuvs import Link, Robot
+from pymuvs.se3 import rot_x, trans
+
+l = 1    # length of pendulum
+m = 1    # mass of pendulum
+g = 9.81 # gravity
+
+theta, dtheta = sp.symbols('θ dθ')
+# Transform from link- to inertial-frame
+Tbn = rot_x(theta) @ trans(0, 0, -l)
+end_mass = Link(m, 0, np.zeros((3, 3)),
+        np.zeros((6, 6)), np.zeros((6, 6)),
+        np.zeros((6, 6)))
+
+# Robot has links, each of which has their own transform
+pendulum = Robot(links=[end_mass],
+    transforms=[Tbn],
+    params=[theta],
+    diff_params=[dtheta])
+
+# gravity in -z direction
+model = pendulum.get_model(gvec=np.array([0, 0, -g]))
+print(f"{model.M = }")
+print(f"{model.C = }")
+print(f"{model.D = }")
+print(f"{model.g = }")
+\end{lstlisting}
+\begin{lstlisting}[style=customtxt,
+    caption={Output of \autoref{lst:usage:pendulum}.},
+    label={lst:usage:pendulum:out}]
+model.M = Matrix([[1.0]])
+model.C = Matrix([[0]])
+model.D = Matrix([[0]])
+model.g = Matrix([[9.81*sin(θ)]])
+\end{lstlisting}
+\autoref{lst:usage:pendulum} and \autoref{lst:usage:pendulum:out} shows how to define a simple pendulum
+in \pymuvs{}. The model is defined by a single link, representing the mass at the
+end of the pendulum. The transformation from the link frame to the inertial frame
+is defined by the rotation matrix \texttt{Tbn}. The \texttt{Robot} object is then
+created with the link and the transformation, and the model is computed using the
+\texttt{get\_model} method. The output shows the mass matrix, Coriolis matrix, damping
+matrix and the gravitational force acting on the pendulum. We recognize this
+as the dynamics of a simple pendulum.
+\begin{align}
+    \ddot{\theta} + \frac{g}{l} \sin(\theta) = 0
+\end{align}
+Note that this simple example does not include any damping, buoyancy or added mass,
+but it serves as a good starting point for understanding how to define a model in
+\pymuvs{}.
 
 \subsection{Validation and Testing}
 
+Along with the development of the \pymuvs{} library, a comprehensive test suite
+was created to ensure the correctness of the library. The test suit consists of
+tests of functionality for each submodule. The genrated C++ code has been tested
+manually, but as of now there are no automated tests for the generated code. The
+unittests can be run by using the build-in \texttt{unittest} module in Python.
+\begin{verbatim}
+    python -m unittest discover -s test
+\end{verbatim}
+in the root of the repository. This will run all the tests in the \texttt{test}
+directory. The tests are not 100\% coverage, but they cover the most important
+functionality of the library. The tests also serve as examples of how to use the
+library, and can be used as a reference when developing models using \pymuvs{}.
+Examples of code generation and model definition can be found in the tests. Some
+of the tests also compare the generated Jacobians with the analytical Jacobians
+from \cite{fossen2021}.
+
+
 % -----------------------------------------------------------------------------
-\section{User Guide}
-\subsection{Installation}
+\section{Installation}
+
+Installing the \pymuvs{ }library is straightforward. The library used Git for
+version control, and the code is hosted on \url{https://github.com/haakonbaa/pymuvs}.
+To install the library and its dependencies, the following steps can be taken. It
+is assumed that the user has Git installed on their system.
+\begin{enumerate}
+    \item Clone the repository using Git. This can be done by running the following
+    command in a terminal.
+    \begin{verbatim}
+    git clone https://github.com/haakonbaa/pymuvs.git
+    \end{verbatim}
+    \item Install the dependencies. Optionally, a virtual environment can be created
+    to avoid conflicts with other Python packages. This can be done by running:
+    \begin{verbatim}
+    python -m pip install -r requirements.txt
+    \end{verbatim}
+\item The library is structured as a Python package, and can be installed system-wide
+    by running the following command in the root of the repository.
+    \begin{verbatim}
+    python -m pip install -e .
+    \end{verbatim}
+\end{enumerate}
+The library is now installed and can be imported in Python by running
+\begin{lstlisting}[caption={Importing the \pymuvs{ }package},
+    style=custompython,
+    label={lst:pymuvs:example}]
+import pymuvs
+\end{lstlisting}
 
 % -----------------------------------------------------------------------------
 \section{Simulator}
-
 In addition to the \pymuvs{} library, a dedicated simulator was developed to 
 model the dynamics of various underwater vehicles. The simulation results 
 presented in this thesis are derived from models created using \pymuvs{}, with 
@@ -116,63 +550,21 @@ simulations.
 % -----------------------------------------------------------------------------
 \section{Conclusion}
 
-\iffalse
+The \pymuvs{} library provides a robust and modular framework for modeling 
+underwater vehicle dynamics using symbolic mathematics. Built on top of NumPy 
+and SymPy, it allows users to define system properties, compute symbolic 
+representations of dynamic models, and export them efficiently to C++ for 
+real-time applications. Its structure, divided into well-organized submodules, 
+supports essential functionalities such as handling transformations, performing 
+time differentiation, and generating Jacobians, ensuring flexibility and 
+clarity in implementation.
 
-\section{Modules}
-The following sections will give an overview of the modules making up the
-library as well as some brief examples showing basic use cases. Note that this
-is not a complete overview of the library, but rather a brief introduction to
-the most important functionality of each module.
-
-% ------------------------------------------------------------------------- se3
-\subsection{se3}
-The \texttt{se3} module contains functions for working with the special Euclidean
-group $SE(3)$. The module is built on top of \texttt{SymPy} and provides functions for
-generating elements of $SE(3)$ from \texttt{SymPy} symbols, as well as functions
-for computing the inverse and multiplication of the elements. A simple example
-is shown below.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[page=1,width=\linewidth,trim=0 11cm 0 0]{assets/se3.pdf}
-    \caption{Example usage of the \texttt{se3} module.}
-    \label{fig:usage:se3}
-\end{figure}
-
-\autoref{fig:usage:se3} shows how to create a variable $T \in \SO$ representing
-a pure rotation in euler angles. More elements of this class can be composed
-together to form arbitrary transformations. This group is used in other modules
-to represent the transformations between links in a robot model.
-
-% --------------------------------------------------------------------- util
-\subsection{util}
-
-
-% --------------------------------------------------------------------- codegen
-\subsection{codegen}
-The \texttt{codegen} module is used to generate C++ code from a model. The module
-uses the \texttt{sympy.ccode} function to generate C code from
-each expression in every matrix and combines them into a header and a source
-file. The \texttt{Eigen} library \cite{eigen3} is used to represent the matrices.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[page=1,width=\linewidth,trim=0 9cm 0 0]{assets/codegen.pdf}
-    \caption{Automatically generated c++ code from a model.}
-    \label{fig:codegen}
-\end{figure}
-
-\fi
-
-\subsection{pymuvs}
-
-{
-    \color{red}
-    \begin{itemize}
-    \item masterstudent skulle lest dette og brukt PyMUVS i sin oppgave, hva trenger man å vite? (ikke detaljert dokumentasjon, bare oversikt over input/modellbeskrivelse->output)
-    \item The PyMUVs chapter can be extended a bit. Sensor knows nothing about how much time you have spent on debugging and implementation, so it must be clear that this is something you have spent a lot of time on and that is an important part of your contribution.
-    \item Nevn Gazebo, og at man ikke kan hente ut modellmatriser derifra, så det ikke er en fullstendig løsning for modellbasert styring av roboter.
-    \item Forklar hvordan det er implementert, med matematikken bak. Stor forskjell i en prosjektoppgave på å sitere modsimboka og på å implementere en dynamisk simulator fra scratch.
-    \item Beskriv hvordan systmet er definert i koden din
-\end{itemize}
-}
+One of the library's key strengths lies in its ability to bridge the gap 
+between symbolic modeling and computational efficiency. By exporting symbolic 
+expressions to optimized C++ code, \pymuvs{} enables faster simulations and 
+supports computationally intensive applications like model-based controllers. 
+This feature is particularly beneficial for real-time scenarios where 
+performance and accuracy are critical. The library not only simplifies the 
+process of modeling complex underwater systems but also provides a foundation 
+for developing advanced control algorithms and simulation 
+environments.

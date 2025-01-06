@@ -1,4 +1,5 @@
 \chapter{Modeling}
+\label{ch:modeling}
 
 \section{Rigid Body Kinetics}
 
@@ -439,10 +440,11 @@ states that the damping matrix can be approximated as
 \begin{subequations}
 \begin{align}
     \bm{D} &= -diag(X_u, Y_v, Z_w, K_p, M_q, N_r) \\
-    \bm{D}_n &= -diag(X_{u|u|}|u|, Y_{v|v|}|v|, Z_{w|w|}|w|, K_{p|p|}|p|, M_{q|q|}|q|, N_{r|r|}|r|)
+    \bm{D}_n &= -diag(X_{u|u|}|u|, Y_{v|v|}|v|, Z_{w|w|}|w|, K_{p|p|}|p|, M_{q|q|}|q|, N_{r|r|}|r|),
 \end{align}
 \end{subequations}
 
+for completely submerged bodies. This will neglect coupling and dissipative effects.
 \citeauthor{mcmillan1995} shows that by using strip theory, the damping force and
 moment on a cylinder can be approximated by the follwing integrals \cite{mcmillan1995}:
 \begin{subequations}
