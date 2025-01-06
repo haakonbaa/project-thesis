@@ -6,8 +6,8 @@ Before modeling a general underwater vehicle manipulator system with multiple li
 a rigid body under water. As it turns out, the equations describing the motion
 of a system with multiple links is very much related to the dynamic properties
 of each individual link. This will become apparent when describing the mass
-and coreolis matrices, as well as forces acting on the general system.
-Consider a rigid body with mass $m$. Denote by $\bm{v}_{ng}^b$ the bodys translational
+and coriolis matrices, as well as forces acting on the general system.
+Consider a rigid body with mass $m$. Denote by $\bm{v}_{ng}^b$ the bodies translational
 velocity, and by $\bm{\omega}_{ng}^b$ its angular velocity in the
 body-fixed frame. We can find the kinetic energy of the body by integrating the
 kinetic energy of every infinitesimal mass element.
@@ -112,7 +112,7 @@ point. The $\bm{M}_{RB}$ and $\bm{C}_{RB}$ matrices are given by \cite{fossen202
     \end{bmatrix}. \label{eq:crb}
 \end{align}
 \end{subequations}
-It can be shown that the coreolis matrix in \autoref{eq:crb} ca be equivallenty
+It can be shown that the coriolis matrix in \autoref{eq:crb} ca be equivalently
 written as \cite{sagatun1991}:
 \begin{align}
     \bm{C}_{RB}(\bm\nu) = \begin{bmatrix}
@@ -146,7 +146,7 @@ has index $1$ and the tail has index $n$. Let
     \end{bmatrix} \in \SE,
 \end{align}
 be the homogeneous transformation matrix from frame $i$, attached to link $i$,
-to the inertial NED\footnote{Atleast approximately inertial} frame $n$. Define
+to the inertial NED\footnote{At least approximately inertial} frame $n$. Define
 \begin{align}
     \bm{A}_i(\theta_i) &\in \SE & i &= 1, 2, \ldots, n-1
 \end{align}
@@ -219,7 +219,7 @@ defined as
 \end{align}
 \end{subequations}
 The derivatives of the link jacobians are needed for control purposes and
-calculation of the coreolis matrix. By differentiating \autoref{eq:link_jacobian}
+calculation of the coriolis matrix. By differentiating \autoref{eq:link_jacobian}
 with respect to time, we get
 \begin{subequations}
 \begin{align}
@@ -271,10 +271,10 @@ of the base link to the derivative of the Euler angles and is given by \cite{fos
 
 \subsection{Dynamics}
 
-For each link, $i$, defined in the previoud subchapter, we associate the following
+For each link, $i$, defined in the previous subchapter, we associate the following
 properties: $\bm{M}_i \in \R^{6 \times 6}$ is the inertia matrix of the link,
 $\bm{J}_i \in \R^{6 \times (6+n)}$ is the link jacobian, $\bm{C}_i \in \R^{6 \times 6}$
-is the coreolis matrix, $\bm{D}_i \in \R^{6 \times 6}$ is the damping matrix and
+is the coriolis matrix, $\bm{D}_i \in \R^{6 \times 6}$ is the damping matrix and
 $\bm{g}_i \in \R^{6}$ is the gravitational forces and buoyancy forces and moments.
 The damping matrix will be discussed in \autoref{sec:hydrodynamics}.
 $\bm{M}_i$ takes into account the added mass of the link
@@ -282,12 +282,12 @@ $\bm{M}_i$ takes into account the added mass of the link
     \bm{M}_i &= \bm{M}_{RB,i} + \bm{M}_{A,i},
 \end{align}
 where $\bm{M}_{RB,i}$ is the rigid body inertia matrix of the link and $\bm{M}_{A,i}$
-is the added mass matrix of the link. As a result of the added mass, the coreolis
+is the added mass matrix of the link. As a result of the added mass, the coriolis
 matrix is given by
 \begin{align}
     \bm{C}_i &= \bm{C}_{RB,i} + \bm{C}_{A,i}
 \end{align}
-where $\bm{C}_{RB,i}$ is the coreolis matrix of the rigid body and $\bm{C}_{A,i}$
+where $\bm{C}_{RB,i}$ is the coriolis matrix of the rigid body and $\bm{C}_{A,i}$
 is a function of the added mass matrix. The added mass matrix and the damping matrix
 for each link is the topic of \autoref{sec:hydrodynamics}. The dynamics of the
 system described in the previous subchapter can be modeled as
@@ -301,7 +301,7 @@ system described in the previous subchapter can be modeled as
 \end{align}
 $\bm{M}(\bm{\theta}) \in \R^{(6+n)\times(6+n)}$  is the inertia matrix of the
 system, $\bm{C}(\bm{\theta}, \bm{\zeta}) \in \R^{(6+n)\times(6+n)}$ is the
-coreolis matrix, $\bm{D}(\bm{\theta}, \bm{\zeta}) \in \R^{(6+n)\times(6+n)}$ is
+coriolis matrix, $\bm{D}(\bm{\theta}, \bm{\zeta}) \in \R^{(6+n)\times(6+n)}$ is
 the damping matrix, $\bm{g}(\bm{\xi}) \in \R^{6+n}$ is the gravitational forces
 and buoyancy forces and moments acting on the system, $\bm{\tau} \in \R^{n}$ is the generalized
 forces acting on the system as a result of the actuators,
@@ -314,7 +314,7 @@ can be expressed as
     \bm{M}(\bm{\theta}) &= \sum_{i=1}^{n} \bm{J}_{i}^T(\bm{\theta}) \bm{M}_i \bm{J}_{i}(\bm{\theta}).
 \end{align}
 Note that if the jacobians are full rank, the inertia matrix is positive definite.
-Furthermore, it is allways symmetric. The coreolis matrix can be expressed as
+Furthermore, it is always symmetric. The coriolis matrix can be expressed as
 \begin{align}
     \bm{C}(\bm{\theta}, \bm{\zeta}) &=
     \sum_{i=1}^{n} \bm{J}_{i}^T(\bm{\theta}) \bm{M}_i \dot{\bm{J}}_{i}(\bm{\theta},\dot{\bm{\theta}})
@@ -398,8 +398,8 @@ According to \cite{fossen2021} this approximation is found to be quite good for
 many applications due to the fact that the off diagonal coupling terms are small
 compared to the diagonal terms.
 
-By applying strip theory the added mass matrix for a cylindirical rigid body of
-mass $m$, lenght along the x-axis $l$ and radius $r$ can be derived as \cite{fossen1994}:
+By applying strip theory the added mass matrix for a cylindrical rigid body of
+mass $m$, length along the x-axis $l$ and radius $r$ can be derived as \cite{fossen1994}:
 \begin{align}
  X_{\dot{u}} &= -0.1 m &
  Y_{\dot{v}} &= -\pi \rho r^2 l \nonumber \\
@@ -424,7 +424,7 @@ can be approximated as \cite{fossen2021}:
 
 There are several phenomena that contribute to the damping of a rigid body in
 a fluid. Among these are potential damping, skin friction, wave drift damping,
-damping due to vorex shedding and lifting forces. In many cases
+damping due to vortex shedding and lifting forces. In many cases
 all of these effects can be approximated using a linear damping matrix $\bm{D}$ and
 a quadratic damping matrix $\bm{D}_n$ \cite{fossen2021}. Damping can be modeled
 as

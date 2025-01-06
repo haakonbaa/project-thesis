@@ -19,11 +19,11 @@ of velocity-, acceleration- and force-level control are to be defined in the
 following sections.
 \fi
 
-Task priority control addresses the problem of managing multiple objectives simultaneously in a robotic system. It is a widely used methodology for handling redundancy in robots, enabling them to perform several tasks at once without compromising the executing of higher-priority objectives. Understanding the concept of tasks, their prioritization, and how multiple tasks interact is essential for ounderstanding the fundamentals of task priority control.
+Task priority control addresses the problem of managing multiple objectives simultaneously in a robotic system. It is a widely used methodology for handling redundancy in robots, enabling them to perform several tasks at once without compromising the executing of higher-priority objectives. Understanding the concept of tasks, their prioritization, and how multiple tasks interact is essential for understanding the fundamentals of task priority control.
 
-A task referes to a specific objective or goal that a robotic system aims to acheive. Tasks can represent a wide variety of objectives, such as moving an end-effector to a desired position and orientation, maintaining a specific posture, avoiding joint limits, preventing collisions, or controlling specific velocities or accelerations at specific points. The tasks are typically described using functions, which map system states to task-specific outputs. These outputs are then often compared to desired values to determine the error and guide the control system towards acheiving the task.
+A task refers to a specific objective or goal that a robotic system aims to achieve. Tasks can represent a wide variety of objectives, such as moving an end-effector to a desired position and orientation, maintaining a specific posture, avoiding joint limits, preventing collisions, or controlling specific velocities or accelerations at specific points. The tasks are typically described using functions, which map system states to task-specific outputs. These outputs are then often compared to desired values to determine the error and guide the control system towards achieving the task.
 
-The prioritization of tasks is a key aspect of task-priority control. When a task is assigned a higher priority, it must be executed without being disturbed or compromised by lower-priority tasks. This means that the control system must balance the objectives of multiple tasks, ensuring that the higher-priority tasks are acheived while still allowing the lower-priority tasks to be executed. In practice, higher priority tasks are resolved first, and the remaining degrees of freedom are used to acheive the lower-priority tasks. For example, a robotic manipulator tasked with avoiding obstacles might prioritize obstacle avoidance over maintaining an exact end-effector position.
+The prioritization of tasks is a key aspect of task-priority control. When a task is assigned a higher priority, it must be executed without being disturbed or compromised by lower-priority tasks. This means that the control system must balance the objectives of multiple tasks, ensuring that the higher-priority tasks are achieved while still allowing the lower-priority tasks to be executed. In practice, higher priority tasks are resolved first, and the remaining degrees of freedom are used to achieve the lower-priority tasks. For example, a robotic manipulator tasked with avoiding obstacles might prioritize obstacle avoidance over maintaining an exact end-effector position.
 
 In the following sections, we will develop the mathematical foundations of task-priority control, exploring the concepts of velocity-, acceleration-, and force/torque-level control.
 
@@ -33,7 +33,7 @@ In the following sections, we will develop the mathematical foundations of task-
 Kinematic-level redundancy resolution is a fundamental concept in task-priority control.
 It is one of the first methods proposed for handling redundancy in a task-priority framework.
 A fundamental assumption in kinematic-level redundancy resolution is that there
-allready exists a controller that can generate the desired joint velocities $\dot{\bm{q}}_d(t)$.
+already exists a controller that can generate the desired joint velocities $\dot{\bm{q}}_d(t)$.
 Considerations around this assumption will be discussed in later sections.
 The mathematical concepts introduced in this section are presented in introductory
 chapters in many of the articles and books on task-priority control, such as
@@ -210,7 +210,7 @@ be generalized to multiple tasks by using the same methods as presented in \auto
 
 The aforementioned methods are, as previously mentioned, based on the assumption
 that a controller exists that can generate the desired joint velocities $\dot{\bm{q}}_d(t)$.
-In practice, this is not always the case, and there is certainly no guarentee that
+In practice, this is not always the case, and there is certainly no guarantee that
 $\dot{\bm{q}}_d(t) = \dot{\bm{q}}(t)$ at all times. This introduces the need for a
 low-level joint-space controller that aims to track the desired joint velocities.
 A simple PD controller is a simple way to achieve this;
@@ -253,7 +253,7 @@ substituting $\bm{\tau}$ with $\bm{\tau}_d(t)$ gives
 effectively compensating for the gravity forces acting on the robot. Integral
 action can be added to the controller to improve tracking performance, but this
 should be done with caution as integral action can introduce instability in the
-system. This is espcially true in cases where some form of integral action is
+system. This is especially true in cases where some form of integral action is
 present in the redundancy resolution algorithm \cite{fossen2021}.
 
 It is also possible to use a feedback linearization technique to achieve the
@@ -277,14 +277,126 @@ see that the joint acceleration is given by:
 \end{subequations}
 Since the mass matrix is positive definite, there is an equivalence between the
 desired joint acceleration and the actual joint acceleration. In practice
-however, the approximations are not exact, and the torque might be innacurate or
+however, the approximations are not exact, and the torque might be inaccurate or
 not feasible due to actuator limits. Furthermore, the estimated joint velocities
-and accelerations might be noisy, making the input torques innacurate.
+and accelerations might be noisy, making the input torques inaccurate.
 
 
 
 % -----------------------------------------------------------------------------
+\newpage
 \section{Dynamic-level Redundancy Resolution}
+
+Dynamic-level redundancy resolution solves the redundancy problem by considering
+the robot's dynamics. This removes the need for a controller that can generate
+the desired joint velocities $\dot{\bm{q}}_d(t)$, and instead uses the robot's
+dynamic model to generate a generalized torque $\bm{\tau}_d(t)$ that will
+be applied to the robot. There are several methods for dynamic-level redundancy
+resolution, but here we will focus on the method presented in \cite{khatib2004}.
+Consider the robot's dynamic model similar to models presented in previous sections:
+\begin{subequations}
+\begin{align}
+    \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{N}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{g}(\bm{q}) &= \bm{\tau} \\
+    \bm{q}, \dot{\bm{q}} ,\ddot{\bm{q}},\bm{\tau} &\in \mathbb{R}^n
+\end{align}
+\end{subequations}
+In the equation above, $N(\bm{q}, \dot{\bm{q}})$ represents the Coriolis and
+damping forces acting on the robot. We consider a case with $2$ tasks, $\bm{\sigma}_t$
+and $\bm{\sigma}_p$, and the corresponding Jacobians $\bm{J}_t$ and $\bm{J}_p$.
+\begin{subequations}
+    \begin{align}
+        \dot{\bm{\sigma}}_t &= \bm{J}_t(\bm{q}) \dot{\bm{q}} & \dot{\bm{\sigma}}_p &= \bm{J}_p(\bm{q}) \dot{\bm{q}} \\
+        \ddot{\bm{\sigma}}_t &= \bm{J}_t(\bm{q}) \ddot{\bm{q}} + \dot{\bm{J}}_t(\bm{q}) \dot{\bm{q}} &
+        \ddot{\bm{\sigma}}_p &= \bm{J}_p(\bm{q}) \ddot{\bm{q}} + \dot{\bm{J}}_p(\bm{q}) \dot{\bm{q}}
+    \end{align}
+\end{subequations}
+We define a dynamically consistent generalized inverse \cite{khatib1987} as
+\begin{subequations}
+    \begin{align}
+        \bar{\cdot} &: \R^n \times \R^{m\times n} \rightarrow \R^{m\times n} & m &= 1, \cdots n\\
+        \bar{\cdot} &: (\bm{q},\bm{X}) \mapsto \bm{M}^{-1}(\bm{q})\bm{X}^T\left(
+            \bm{X}\bm{M}^{-1}(\bm{q})\bm{X}^T
+        \right)
+    \end{align}
+\end{subequations}
+The dynamically consistent generalized inverse is used to project the system dynamics
+onto the task space. For the sake of brevity, the dependencies of $\bm{q}$ and $\bm{\sigma}$
+will be omitted in the following equations. We define the following properties and
+select the applied generalized force $\bm{\tau}$ as
+\begin{align}
+    \bm{N}_t &:= \I - \bar{\bm{J}}_t \bm{J}_t &
+    \bm{J}_{p|t} &:= \bm{J}_p \bm{N}_t &
+    \bm{\tau} = \bm{J}_t^T \bm{f}_t + \bm{J}_{p|t}^T \bm{f}_p,
+    \label{eq:force_application}
+\end{align}
+where $\bm{f}_t$ and $\bm{f}_p$ are forces applied in task space to be
+specified. To build some intuition, consider the projected dynamics onto
+the two task spaces, slightly abusing notation:
+\begin{subequations}
+    \label{eq:projected_dynamics}
+\begin{align}
+    \bar{\bm{J}}_t^T \left[
+        \bm{M} \ddot{\bm{q}} + \bm{N} \dot{\bm{q}} + \bm{g} = \bm{\tau}
+        \right]
+    &\Rightarrow
+    \bm{\Lambda}_t \ddot{\bm{\sigma}}_t + \bm{\mu}_t + \bm{p}_t = \bm{f}_t \\
+    \bar{\bm{J}}_{p|t}^T \left[
+        \bm{M} \ddot{\bm{q}} + \bm{N} \dot{\bm{q}} + \bm{g} = \bm{\tau}
+        \right]
+    &\Rightarrow
+    \bm{\Lambda}_{p|t} \ddot{\bm{\sigma}}_p + \bm{\mu}_{p|t} + \bm{p}_{p|t} = \bm{f}_{p|t},
+\end{align}
+\end{subequations}
+where
+\begin{subequations}
+\begin{align}
+    \bm{\Lambda}_t &:= \left(\bm{J}_t \bm{M}^{-1} \bm{J}_t^T\right)^{-1} &
+    \bm{\mu}_t &:= \bar{\bm{J}}_t^T \bm{N} \dot{\bm{q}} &
+    \bm{p}_t &:= \bar{\bm{J}}_t^T \bm{g} \\
+    \bm{\Lambda}_{p|t} &:= \left(\bm{J}_{p|t} \bm{M}^{-1} \bm{J}_{p|t}^T\right)^{-1} \label{eq:lambda_pIt} &
+    \bm{\mu}_{p|t} &:= \bar{\bm{J}}_{p|t}^T \bm{N} \dot{\bm{q}} &
+    \bm{p}_{p|t} &:= \bar{\bm{J}}_{p|t}^T \bm{g}
+\end{align}
+\end{subequations}
+This is assuming that the Jacobians are full rank, implying that the task-space
+mass matrices are invertible. From \autoref{eq:projected_dynamics}, it is clear
+that one can use a feedback linearization technique to control the tasks. By
+choosing the forces $\bm{f}_t$ and $\bm{f}_{p|t}$ as
+\begin{subequations}
+\begin{align}
+    \bm{f}_t &= \bm{\Lambda}_t \bm{f}_t^* + \bm{\mu}_t + \bm{p}_t \\
+    \bm{f}_{p|t} &= \bm{\Lambda}_{p|t} \left(\bm{f}_p^* - \ddot{\bm{\sigma}}_{\overline{p|t}}\right) + \bm{\mu}_{p|t} + \bm{p}_{p|t} \label{eq:osc_fp|t}\\
+    \ddot{\bm{\sigma}}_{\overline{p|t}} &:= \ddot{\bm{\sigma}}_p - \ddot{\bm{\sigma}}_{p|t},
+\end{align}
+\end{subequations}
+one can achieve the desired task accelerations $\bm{f}_t^*$ and
+$\bm{f}_p^*$. The term $\bm{J}_t^T\bm{f}_t$ in \autoref{eq:force_application} can induce an acceleration in the 
+controllable $p$-space, this is compensated for by the
+$\ddot{\bm{\sigma}}_{\overline{p|t}}$ term \cite{sentis2004}:
+\begin{align}
+    \ddot{\bm{\sigma}}_{\overline{p|t}} = \bm{J}_p \bm{M}^{-1} \bm{J}_t^T \bm{f}_t
+    + \bm{\Lambda}_{p|t}^{-1}\left(\bm{\mu}_{p|t} + \bm{p}_{p|t}\right)
+    - \bm{\Lambda}_{p}^{-1}\left(\bm{\mu}_p + \bm{p}_p\right)
+\end{align}
+Assuming that the tasks are compatible, the desired task accelerations can be
+shown to be
+\begin{align}
+    \ddot{\bm{\sigma}}_t &= \bm{f}_t^* & \ddot{\bm{\sigma}}_p &= \bm{f}_p^*.
+\end{align}
+In the case where $\bm{J}_{p|t}\bm{M}^{-1}\bm{J}_{p|t}^T$ in \autoref{eq:lambda_pIt}
+is singular, the task-space mass matrix $\bm{\Lambda}_{p|t}$ can be generalized
+as the Moore-Penrose pseudoinverse of the matrix \cite{khatib2004}:
+\begin{align}
+    \underline{\bm{\Lambda}}_{p|t} &:= \left(\bm{J}_{p|t} \bm{M}^{-1} \bm{J}_{p|t}^T\right)^{+} &
+    \label{eq:lambda_pIt_pseudo}
+\end{align}
+Substituting $\bm{\Lambda}_{p|t}$ in \autoref{eq:osc_fp|t} with
+$\underline{\bm{\Lambda}}_{p|t}$ in \autoref{eq:lambda_pIt_pseudo} allows for
+accelerations in the non-conflicting directions in the $p$-space.
+
+The method presented above has been generalized to multiple tasks in \cite{sentis2004}.
+This will not be discussed in this thesis, but the essence of the method is the same
+as presented above.
 
 % -----------------------------------------------------------------------------
 \section{Optimization Objective as Tasks}
@@ -316,7 +428,7 @@ pseudoinverse numerically on a computer. One of the most important consideration
 robustness of the algorithm. Although the pseudoinverse is defined for all matrices,
 when the matrix is close to being singular, the pseudoinverse can be very sensitive
 to small changes in the matrix. This might lead to very large input torques along
-allmost-singular directions. This problem is discussed extensively in \cite{chiaverini1997}.
+almost-singular directions. This problem is discussed extensively in \cite{chiaverini1997}.
 The following section will discuss the singularity robustness of the algorithm used in this
 thesis as proposed by \cite{chiaverini1997}.
 
@@ -360,7 +472,7 @@ and for small values of $\sigma_i$,
     \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \approx 0
 \end{align}
 This will make the pseudoinverse well-conditioned for all values of $\sigma_i$.
-The trado-off is that the damped pseudoinverse will not be the true pseudoinverse.
+The trade-off is that the damped pseudoinverse will not be the true pseudoinverse.
 This might lead to tasks with lower priority affecting the higher-priority tasks and
 breaking some of the assumptions made when proving stability and task consistency.
 
