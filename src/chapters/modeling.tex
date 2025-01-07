@@ -416,7 +416,7 @@ can be approximated as \cite{fossen2021}:
  X_{\dot{u}} &= -\frac{\alpha_0}{2-\alpha_0}m &
  Y_{\dot{v}} &= -\frac{\beta_0}{2-\beta_0}m \nonumber \\
  Z_{\dot{w}} &= Y_{\dot{v}}&
- K_{\dot{p}} &= 0 \\
+ K_{\dot{p}} &= 0 \label{eq:ellipsoid_added_mass} \\
  M_{\dot{q}} &= -\frac{1}{5}\frac{(b^2-a^2)^2(\alpha_0-\beta_0)}{2(b^2-a^2) + (b^2+a^2)(\beta_0-\alpha_0)}m&
  N_{\dot{r}} &= M_{\dot{q}} \nonumber
 \end{align}
@@ -470,6 +470,7 @@ damping matrix for a cylinder as \cite{schmidt2018}:
             0 &            0 & -\frac{1}{2}l &          0 & \frac{1}{3}l^2 &            0 \\
             0 & \frac{1}{2}l &             0 &          0 &              0 & \frac{1}{3}l^2
     \end{bmatrix},
+\label{eq:damping_cyl}
 \end{align}
 where $C_D$, $v_{ref}$, $\beta$, $\gamma$ are constants to be determined.
 

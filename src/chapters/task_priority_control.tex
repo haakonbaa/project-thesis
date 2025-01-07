@@ -41,6 +41,7 @@ chapters in many of the articles and books on task-priority control, such as
 presented in \cite{chiaverini1997}.
 
 \subsection{Velocity-level control}
+\label{sec:velocity_level_control}
 
 A task variable $\bm{\sigma}(t) \in \mathbb{R}^m$ is defined as a function of the robot's
 joint variables $\bm{q}(t) \in \mathbb{R}^n$.
@@ -217,7 +218,7 @@ A simple PD controller is a simple way to achieve this;
 \begin{align}
     \bm{\tau}_d(t) :=  \bm{\tau}_{\mathrm{PD}}(t) =
         \bm{K}_p \left( \bm{q}_d(t) - \bm{q}(t) \right)
-        + \bm{K}_d \left( \dot{\bm{q}}_d(t) - \dot{\bm{q}}(t)\right)
+        + \bm{K}_d \left( \dot{\bm{q}}_d(t) - \dot{\bm{q}}(t)\right) \label{eq:Kp_Kd}
 \end{align}
 Here, $\bm{K}_d$ and $\bm{K}_p$ are positive definite gain matrices to be tuned
 and $\bm{\tau}_d(t)$ is the desired generalized torques acting on the robot. A
@@ -313,10 +314,10 @@ and $\bm{\sigma}_p$, and the corresponding Jacobians $\bm{J}_t$ and $\bm{J}_p$.
 We define a dynamically consistent generalized inverse \cite{khatib1987} as
 \begin{subequations}
     \begin{align}
-        \bar{\cdot} &: \R^n \times \R^{m\times n} \rightarrow \R^{m\times n} & m &= 1, \cdots n\\
+        \bar{\cdot} &: \R^n \times \R^{m\times n} \rightarrow \R^{m\times n} & m &= 1, \cdots, n\\
         \bar{\cdot} &: (\bm{q},\bm{X}) \mapsto \bm{M}^{-1}(\bm{q})\bm{X}^T\left(
             \bm{X}\bm{M}^{-1}(\bm{q})\bm{X}^T
-        \right)
+        \right)^{-1}
     \end{align}
 \end{subequations}
 The dynamically consistent generalized inverse is used to project the system dynamics

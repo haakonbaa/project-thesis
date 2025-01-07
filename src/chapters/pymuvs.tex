@@ -119,8 +119,7 @@ primary package, referred to as \emph{pymuvs}. These four submodules are as foll
     
     \item \emph{util}: This submodule provides utility functions for matrix 
         manipulation, such as the skew-operator, time differentiation, and derivatives 
-        of matrices and vectors. Additionally, it facilitates the generation of C++ 
-        code from classes defined in the \emph{tp} submodule.
+        of matrices and vectors.
     
     \item \emph{tp}: This submodule defines classes for tasks $\bm{\sigma}$ and 
         desired tasks $\bm{\sigma}_d$.
@@ -146,7 +145,7 @@ The \texttt{se3} submodule provides functionality for working with the special E
 A simple example demonstrating the creation of a rotation matrix from Euler angles is shown below:
 
 \begin{lstlisting}[style=custompython,
-    caption={Creating a rotation matrix from euler angles.},
+    caption={Creating a rotation matrix from Euler angles.},
     label={lst:usage:se30}]
 import sympy as sp
 from pymuvs.se3 import rot_x, rot_y, rot_z
