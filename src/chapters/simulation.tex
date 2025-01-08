@@ -217,39 +217,67 @@ The task as seen in \autoref{fig:traj_f0} is the highest priority task.
 The kinematic-level control method used in the simulation is the velocity-level
 controller presented in \autoref{sec:velocity_level_control}. As we are only considering
 a case with two tasks, the question of successive versus augmented nullspace projections
-are irrelevant. The low-levl joint-space controller chosen is a PD+ controller
+are irrelevant. The projections used in the controller are inverse based
+and the low-levl joint-space controller chosen is a PD+ controller
 with buoyancy/gravity compensation. Because of the simplicity of the shape of the robot,
 these forces are relatively well known in a real-world scenario.
 
 The gain matrices $\bm{K}_p$ and $\bm{K}_d$ as presented in \autoref{eq:Kp_Kd}
 are chosen based on the assumption that the mass, coreolis, damping and added mass
-matrices are known and constant. Under theis assumption, the system model is approximated
+matrices are known, constant and diagonal. Under theis assumption, the system model is approximated
 as
 \begin{align}
-    \bar{\bm{M}}(\bm{0}) \ddot{\bm{q}} + \bm{C}(\bm{0}, \dot{\bm{0}}) \dot{\bm{q}} +
-    \bm{D}(\bm{0}, \dot{\bm{0}}) \dot{\bm{q}} + \bm{g}(\bm{q}) \approx \bm{J}^T(\bm{q}) \bm{B} \bm{u},
+    \bar{\bm{M}}(\bm{0}) \ddot{\bm{q}} + \bar{\bm{C}}(\bm{0}, \dot{\bm{0}}) \dot{\bm{q}} +
+    \bar{\bm{D}}(\bm{0}, \dot{\bm{0}}) \dot{\bm{q}} + \bm{g}(\bm{q}) \approx \bm{J}^T(\bm{q}) \bm{B} \bm{u},
 \end{align}
-Using this approximation, the gains are chosen 
+where the bar denotes that the matrices are approximated. Using this approximation,
+the system is decoupled and diagonal gain matrices can be chosen such that we get
+a set of $n$ second-order systems with the same natural frequency and damping ratio.
+In this case, the natural frequency is chosen as $\omega_n = \pi/6$ and the damping ratio
+as $\zeta = 1$. Using this approximation, the gains are chosen as
+\begin{subequations}
+\begin{align}
+    \bm{K}_p &= \operatorname{diag}\left(122, 206, 206, 0.5, 664.428, 664.428, 78, 78, 32, 32\right) \\
+    \bm{K}_d &= \operatorname{diag}\left(306, 479, 479, 1, 1531, 1531, 195, 195, 65, 65\right).
+\end{align}
+\end{subequations}
 
 The assumptions and implications of using gains based on the model are discussed
 in \autoref{sec:simulation:results}.
 
 \subsubsection{Dynamic-level Control}
 
-\subsection{Simulation Environment}
-\begin{itemize}
-    \item Mention simulator
-    \item Initial conditions
-    \item simulation parameters, $\Delta t$, etc.
-    \item The force and torque limits of the robot.
-    \item Force is pass through (no lowpass filtering), and the implications of
-        this.
-\end{itemize}
+The dynamic-level control method used in the simulation is the method presented in \autoref{sec:tpc:dynamic_level}. The forces $\bm{f}_t$ and $\bm{\tau}_t$ are computed using
+a feedforward term and a PD controller. The gains of the PD controller are chosen
+such that the feedback linearization controller renders the system as a second-order
+system with a natural frequency of $\omega_n = \pi/6$ and a damping ratio of $\zeta = 1$.
+This is done to make the comparison between the two controllers more fair. The forces
+are computed as:
+\begin{subequations}
+\begin{align}
+    \bm{f}_0^* = \ddot{\sigma}_0
+    - 2 \zeta \omega_n \left(\dot{\bm{f}}_0(\bm{q}) - \dot{\bm{\sigma}}_0(t)\right)
+    - \omega_n^2 \left(\bm{f}_0(\bm{q}) - \bm{\sigma}_0(t)\right) \\
+    \bm{f}_1^* = \ddot{\sigma}_1
+    - 2 \zeta \omega_n \left(\dot{\bm{f}}_1(\bm{q}) - \dot{\bm{\sigma}}_1(t)\right)
+    - \omega_n^2 \left(\bm{f}_1(\bm{q}) - \bm{\sigma}_1(t)\right)
+\end{align}
+\end{subequations}
+Because of the two tasks being incompatible at some point, the $\bm{\Lambda}_{p|t}$
+matrix can not be computed using an ordinary inverse, as this will give numerical issues.
+Instead, different methods of damped pseudoinverses presented in \autoref{sec:tpc:sing_robust}
+are used. The parameters and the spesific method used are presented in \autoref{sec:simulation:results}.
 
-The initial conditions of the robot in the simulation are given in \autoref{tab:initial}.
-The simulation parameters were chosen such that it satisfies task $1$, for the tail,
+\subsection{Simulation Environment}
+
+The initial state of the robot in the simulation are given in \autoref{tab:initial}.
+The state was chosen such that it satisfies task $1$, for the tail,
 but not task $0$, the trajectory tracking task. This was done to show convergence
-to the task when having an error in the initial conditions.
+to the task when having an error in the initial conditions. The initial state
+can be seen in \autoref{tab:initial} and \autoref{fig:init_pos}. The figure
+shows the position of the three links as well as their orientation as visualised
+by the red, green and blue arrows symbolizing the $x$, $y$ and $z$ axes of the
+links.
 \begin{table}[h!]
     \centering
     \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
@@ -263,20 +291,100 @@ to the task when having an error in the initial conditions.
     \label{tab:initial}
 \end{table}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{assets/plots/initial_pos.pdf}
+    \caption{The initial position of the robot in the NED frame.}
+    \label{fig:init_pos}
+\end{figure}
+The time step of the simulation is $\Delta t = 0.01$ [s]. The controller is
+called at each time step. The controllers all give a desired input $u$ which
+maps to a specific torque in joint motors and a force in the thrusters.
+This means that the controllers will have to do the inverse mapping, which
+is a relatively simple operation as the \pymuvs package provides this inverse
+mapping by default. All of
+the forces and torques are limited to a maximum of $100$ N and $100$ Nm, respectively.
+These limitations are quite high compared to the Eelume 500 robot, but are chosen
+such that it is apparent when the controllers are saturating. The forces and torques
+are "pass through", meaning that the forces and torques are directly applied without
+any filtering.
+
+
 \subsection{Performance Metrics}
-\begin{itemize}
-    \item Task error
-    \item Computation time
-\end{itemize}
+The following performance metrics will be considered when comparing the two controllers:
+
+\textbf{Task error}: We define the task error as the two-norm of the difference
+between the desired task position and the actual task position. The task error
+is computed for both tasks.
+\begin{align}
+    \bm{e}_i &:= ||\bm{f}_i(\bm{q}) - \bm{\sigma}_i(t)||_2 &
+        i &= 0, 1.
+\end{align}
+
+\textbf{Computation time}: The time it takes to compute the control input at each
+time step will be measured. This is done to see if it is feasible to implement the
+two controllers on a real-world system. Note that the simulation time also includes
+simulation of the dynamics and saving of data. Furthermore, the implementation is
+not written with performance in mind, it will however give an indication of the
+computational cost of the two controllers.
+
+\textbf{Thruster usage}: If some controllers give a higher thruster usage than others
+will give an indication of how realistic the controllers are. Considering the
+pseudo-inverse used in both controllers, having a high and fast varying thruster
+usage can be a sign of numerical instability.
 
 % -----------------------------------------------------------------------------
 %\section{Simulation Scenarios}
 
 % -----------------------------------------------------------------------------
+\newpage
 \section{Results and Discussion}
 \label{sec:simulation:results}.
-\subsection{Quantitative Results}
-\subsection{Qualitative Observations}
+
+\subsection{Kinematic-level Control}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=2,width=\linewidth]{assets/results/kinematic/h5data.pdf}
+    \caption{Task space error using kinematic-level control.}
+    \label{}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=3,width=\linewidth]{assets/results/kinematic/h5data.pdf}
+    \caption{Computation time using kinematic-level control.}
+    \label{}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=1,width=\linewidth]{assets/results/kinematic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=2,width=\linewidth]{assets/results/kinematic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=3,width=\linewidth]{assets/results/kinematic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=4,width=\linewidth]{assets/results/kinematic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=5,width=\linewidth]{assets/results/kinematic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=6,width=\linewidth]{assets/results/kinematic/gif.pdf}
+    \end{subfigure}
+    \caption{Visualisation of the position of the robot using kinematic-level control.}
+    \label{fig:kinematic_vis}
+\end{figure}
+
+
+
+
+\subsection{Dynamic-level Control}
+\subsection{Discussion}
 \subsection{Comparative Analysis}
 
 \iffalse
