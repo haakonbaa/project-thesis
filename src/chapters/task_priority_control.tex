@@ -488,7 +488,7 @@ The VDLSI is defined as
     \bm{J}^{\circ} := \sum_{i=1}^r \frac{\sigma_i}{\sigma_i^2 + \lambda_i^2(\sigma_i)} \bm{v}_i \bm{u}_i^T \\
     \lambda_i^2(\sigma_i) = \begin{cases}
         0 & ,\sigma_i \geq \varepsilon \\
-        \left(1-\left(\frac{\sigma_i}{\varepsilon}\right)\right)\lambda_{max}^2 & ,\sigma_i < \varepsilon
+        \left(1-\left(\frac{\sigma_i}{\varepsilon}\right)^2\right)\lambda_{max}^2 & ,\sigma_i < \varepsilon
     \end{cases}
 \end{align}
 \end{subequations}

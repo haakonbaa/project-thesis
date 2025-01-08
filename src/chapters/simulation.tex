@@ -1,5 +1,16 @@
 \chapter{Simulation}
 
+This chapter presents the simulation framework developed to evaluate and 
+compare task-priority control methods for light-UVMSs. The chapter begins by 
+introducing the robot model, derived from the mathematical framework 
+established in the previous chapter, and outlines the simulation environment 
+and performance metrics. Different task-priority control strategies, both at 
+the kinematic and dynamic levels, are implemented and tested in a series of 
+simulation scenarios. The results provide insights into the performance, 
+computational cost, and robustness of each approach, laying the groundwork for 
+future experimental validation.
+
+\iffalse
 % -----------------------------------------------------------------------------
 \section{Introduction}
 \begin{itemize}
@@ -10,9 +21,9 @@
 \end{itemize}
 This section should be very general. I don't want to give specifics on the
 tasks and the specific types of controllers used.
+\fi
 
 % -----------------------------------------------------------------------------
-\newpage
 \section{Simulation Setup}
 
 \subsection{Robot Model}
@@ -33,7 +44,7 @@ A picture of the Eelume 500 robot is shown in Figure \ref{fig:eely}.
     \label{fig:eely}
 \end{figure}
 
-Each of the links has two degrees of freedom and is actuated by a pair of
+Each of the joints has two degrees of freedom and is actuated by a pair of
 motors. In addition, two of the links are equipped with a set of $4$ thrusters.
 The thruster configuration allows the robot to move in all directions, making
 the robot fully actuated. Although one can define the base of the robot as any
@@ -104,27 +115,27 @@ specifications of the position and orientation of the thrusters can be seen in
 
 \begin{table}[h]
     \centering
-    \begin{tabular}{|c|c|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
         \hline
-        Link & Thruster & $x$, North [m] & $y$, East [m] & $z$, Down [m] & Thrust Direction \\ \hline
-        $2$ & Starboard & $0.56725$ & $-0.174$ & $0$ & Sout-Up \\
-        $2$ & Port & $0.56725$ & $0.174$ & $0$ & Sout-Down \\
-        $2$ & Bottom & $0.67725$ & $0.000$ & $0.09$ & East \\
-        $2$ & Top & $0.67725$ & $0.000$ & $-0.09$ & West \\
-        $3$ & Starboard & $0.02025$ & $-0.174$ & $0$ & Sout-Down \\
-        $3$ & Port & $0.02025$ & $0.174$ & $0$ & Sout-Up \\
-        $3$ & Bottom & $-0.08975$ & $0.000$ & $0.09$ & West \\
-        $3$ & Top & $-0.08975$ & $0.000$ & $-0.09$ & East \\
+        Link & Number & Thruster & $x$ [m] & $y$, [m] & $z$, [m] & Direction \\ \hline
+        $2$ & 1 & Starboard & $0.56725$ & $-0.174$ & $0$ & Sout-Up \\
+        $2$ & 2 & Port & $0.56725$ & $0.174$ & $0$ & Sout-Down \\
+        $2$ & 3 & Bottom & $0.67725$ & $0.000$ & $0.09$ & East \\
+        $2$ & 4 & Top & $0.67725$ & $0.000$ & $-0.09$ & West \\ \hline
+        $3$ & 5 & Starboard & $0.02025$ & $-0.174$ & $0$ & Sout-Down \\
+        $3$ & 6 & Port & $0.02025$ & $0.174$ & $0$ & Sout-Up \\
+        $3$ & 7 & Bottom & $-0.08975$ & $0.000$ & $0.09$ & West \\
+        $3$ & 8 & Top & $-0.08975$ & $0.000$ & $-0.09$ & East \\
         \hline
     \end{tabular}
-    \caption{Thruster configuration for the simplified Eelume 500 robot. Positions relative to link center.}
+    \caption{Thruster configuration for the simplified Eelume 500 robot. Positions relative to link frame.}
     \label{tab:thrusters}
 \end{table}
 
 The transformations between the thruster positions and the link center are given
 as transformations described in $\SE$. Let $\bm{T}_{\rightarrow}$ and $\bm{T}_{\angle}$
 dente functions that return the transformation matrix corresponding to a translation
-or rotation, respectively.
+or rotation, respectively. The transformations can be defined as follows:
 \begin{subequations}
 \begin{align}
     \bm{T}_{\rightarrow} : \R^3 &\to \SE 
@@ -133,10 +144,10 @@ or rotation, respectively.
     &\bm{T}_{\angle} : \begin{bmatrix}\phi \\ \theta \\ \psi \end{bmatrix} &= \begin{bmatrix}
         \bm{R}_z(\psi) \bm{R}_y(\theta) \bm{R}_x(\phi) & \bm{0}_{3\times1} \\
             \bm{0}_{1\times3} & 1
-    \end{bmatrix}.
+    \end{bmatrix},
 \end{align}
 \end{subequations}
-The transformation matrices are then given as follows:
+The transformation matrices are then given as:
 
 %Tl1_to_body = se3.trans(lengths[1]/2+jlhs, 0, 0) @ se3.rot_y(a3) @ se3.rot_z(a4) @ se3.trans(lengths[0]/2+jlhs, 0, 0)
 %    Tl3_to_body = se3.inv(
@@ -157,7 +168,7 @@ The transformation matrices are then given as follows:
             \bm{T}_3^n &= \bm{T}_2^n \left(\bm{T}_2^3\right)^{-1}.
 \end{align}
 where $a_1$, $a_2$, $a_3$ and $a_4$ are the parameters of the joint angles,
-$\bm{T}_1^2$, and $\bm{T}_2^3$ are the transformations from link $1$ to link $2$
+$\bm{T}_1^2$, and $\bm{T}_2^3$ are the transformations from the frame of link $1$ to link $2$
 and from link $2$ to link $3$, respectively. $\phi$, $\theta$ and $\psi$ are the
 Euler angles of the base and $x^n$, $y^n$ and $z^n$ are the position of base
 in the NED coordinate system. Collecting the parameters describing the position
@@ -165,6 +176,8 @@ and attitude of the entire robot, we can define the state of the robot as
 \begin{align}
     \bm{q} &= \begin{bmatrix} x^n & y^n & z^n & \phi & \theta & \psi & a_1 & a_2 & a_3 & a_4 \end{bmatrix}^T.
 \end{align}
+The torques applied to the joints $a_i$ $i=1,2,3,4$ are denoted as $\tau_i$ in
+the rest of the report.
 From the parameters stated above, the dynamics of the robot, on the form of
 \autoref{eq:pymuvs:eom}, was computed using \pymuvs.
 
@@ -274,7 +287,8 @@ The initial state of the robot in the simulation are given in \autoref{tab:initi
 The state was chosen such that it satisfies task $1$, for the tail,
 but not task $0$, the trajectory tracking task. This was done to show convergence
 to the task when having an error in the initial conditions. The initial state
-can be seen in \autoref{tab:initial} and \autoref{fig:init_pos}. The figure
+can be seen in \autoref{tab:initial} and \autoref{fig:init_pos}. The initial velocity
+is set to $\bm{0}$. The figure
 shows the position of the three links as well as their orientation as visualised
 by the red, green and blue arrows symbolizing the $x$, $y$ and $z$ axes of the
 links.
@@ -298,7 +312,7 @@ links.
     \label{fig:init_pos}
 \end{figure}
 The time step of the simulation is $\Delta t = 0.01$ [s]. The controller is
-called at each time step. The controllers all give a desired input $u$ which
+called at every time step. The controllers all give a desired input $\bm{u}$ which
 maps to a specific torque in joint motors and a force in the thrusters.
 This means that the controllers will have to do the inverse mapping, which
 is a relatively simple operation as the \pymuvs package provides this inverse
@@ -308,7 +322,6 @@ These limitations are quite high compared to the Eelume 500 robot, but are chose
 such that it is apparent when the controllers are saturating. The forces and torques
 are "pass through", meaning that the forces and torques are directly applied without
 any filtering.
-
 
 \subsection{Performance Metrics}
 The following performance metrics will be considered when comparing the two controllers:
@@ -333,14 +346,34 @@ will give an indication of how realistic the controllers are. Considering the
 pseudo-inverse used in both controllers, having a high and fast varying thruster
 usage can be a sign of numerical instability.
 
+\textbf{Joint torque usage}: Equally to the thruster usage, the joint torque usage
+will give an indication of how realistic the controllers are. Too high or too
+fast varying joint torques can be a sign of numerical instability.
+
 % -----------------------------------------------------------------------------
-%\section{Simulation Scenarios}
+\iffalse
+\section{Simulation Scenarios}
+\begin{enumerate}
+    \item Kinematic-level control as described in ...
+    \item Dynamic-level control as described in .... The damping of ... is chosen
+        as
+    \begin{enumerate}
+            \item pseuodo-inverse
+            \item damped pseudo-inverse, $\lambda = 0.1$
+            \item variable damped pseudo-inverse, $\lambda = 0.1$, $\epsilon = 0.1$
+    \end{enumerate}
+    \item Kinematic level controll with disturbance and erroneous model (gain matrices
+    based on the model)
+    \item Dynamic level control with disturbance and erroneous model
+\end{enumerate}
+\fi
 
 % -----------------------------------------------------------------------------
 \newpage
 \section{Results and Discussion}
 \label{sec:simulation:results}.
 
+% -----------------------------------------------------------------------------
 \subsection{Kinematic-level Control}
 
 \begin{figure}[h!]
@@ -352,9 +385,19 @@ usage can be a sign of numerical instability.
 \begin{figure}[h!]
     \centering
     \includegraphics[page=3,width=\linewidth]{assets/results/kinematic/h5data.pdf}
-    \caption{Computation time using kinematic-level control.}
+    \caption{Computation time at each time-step using kinematic-level control.}
     \label{}
 \end{figure}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Mean & Standard Deviation \\ \hline
+        22.5 $\mu$s & 2.4 $\mu$s \\ \hline
+    \end{tabular}
+    \caption{Computation time using kinematic-level control.}
+\end{table}
 
 \begin{figure}[h!]
     \centering
@@ -380,42 +423,108 @@ usage can be a sign of numerical instability.
     \label{fig:kinematic_vis}
 \end{figure}
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=1,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \includegraphics[page=2,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \includegraphics[page=3,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \includegraphics[page=6,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \includegraphics[page=4,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \includegraphics[page=5,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \caption{Positions and velocities of the robot in the NED frame using kinematic-level control.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=7,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \includegraphics[page=8,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \caption{Forces and torques applied to the robot using kinematic-level control.}
+\end{figure}
 
 
 
+
+
+\FloatBarrier
+% -----------------------------------------------------------------------------
 \subsection{Dynamic-level Control}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=1,width=\linewidth]{assets/results/dynamic/h5data.pdf}
+    \caption{Contdition number of mass matrices using dynamic-level control.}
+    \label{}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=2,width=\linewidth]{assets/results/dynamic/h5data.pdf}
+    \caption{Task space error using dynamic-level control.}
+    \label{}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=3,width=\linewidth]{assets/results/dynamic/h5data.pdf}
+    \caption{Computation time at each time-step using dynamic-level control.}
+    \label{}
+\end{figure}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Mean & Standard Deviation \\ \hline
+        48.5 $\mu$s & 3.4 $\mu$s \\ \hline
+    \end{tabular}
+    \caption{Computation time using dynamic-level control.}
+\end{table}
+
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=1,width=\linewidth]{assets/results/dynamic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=2,width=\linewidth]{assets/results/dynamic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=3,width=\linewidth]{assets/results/dynamic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=4,width=\linewidth]{assets/results/dynamic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=5,width=\linewidth]{assets/results/dynamic/gif.pdf}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+        \includegraphics[page=6,width=\linewidth]{assets/results/dynamic/gif.pdf}
+    \end{subfigure}
+    \caption{Visualisation of the position of the robot using dynamic-level control.}
+    \label{fig:dynamic_vis}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=1,width=\linewidth]{assets/results/dynamic/plot.pdf}
+    \includegraphics[page=2,width=\linewidth]{assets/results/dynamic/plot.pdf}
+    \includegraphics[page=3,width=\linewidth]{assets/results/dynamic/plot.pdf}
+    \includegraphics[page=6,width=\linewidth]{assets/results/dynamic/plot.pdf}
+    \includegraphics[page=4,width=\linewidth]{assets/results/dynamic/plot.pdf}
+    \includegraphics[page=5,width=\linewidth]{assets/results/dynamic/plot.pdf}
+    \caption{Positions and velocities of the robot in the NED frame using dynamic-level control.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=7,width=\linewidth]{assets/results/dynamic/plot.pdf}
+    \includegraphics[page=8,width=\linewidth]{assets/results/dynamic/plot.pdf}
+    \caption{Forces and torques applied to the robot using dynamic-level control.}
+\end{figure}
+
+\FloatBarrier
+
 \subsection{Discussion}
 \subsection{Comparative Analysis}
-
-\iffalse
-\begin{figure}[h]
-    \centering
-    \includegraphics[page=1,width=\linewidth]{assets/plot.pdf}
-    \caption{Euler angles of simulated Eelume robot with feedback linearization control.}
-    \label{fig:plot}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[page=2,width=\linewidth]{assets/plot.pdf}
-    \caption{NED position of simulated Eelume robot with feedback linearization control.}
-    \label{fig:plot2}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[page=3,width=\linewidth]{assets/plot.pdf}
-    \caption{}
-    \label{fig:plot3}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[page=4,width=\linewidth]{assets/plot.pdf}
-    \caption{}
-    \label{fig:plot4}
-\end{figure}
-\fi
 
 \begin{itemize}
     \item Simulation study comparing velocity- and acceleration-level task-priority
