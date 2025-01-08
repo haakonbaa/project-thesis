@@ -1,16 +1,68 @@
 \chapter{Conclusion and Future Work}
 
 % ----------------------------------------------------------------- Future Work
-\subsection{Future Work}
+\section{Future Work}
+
+While the simulation and analysis presented in this thesis provide valuable 
+insights into task-priority control for light-UVMSs, there are several topics
+that could be explored further:
+
+\begin{itemize}
+    \item \textbf{Experimental Validation on Physical Systems}: A critical next step is to 
+validate the simulation results on NTNU's Eelume 500 robot in real-world 
+underwater conditions. This would account for additional complexities such as 
+sensor noise, unmodeled hydrodynamic effects, and actuator 
+limitations.
+
+    \item \textbf{Integration of Thruster and Motor Dynamics}: Current simulations 
+        assume ideal thruster and motor responses. Future work should incorporate 
+        dynamic models of thrusters and motors, including time delays and saturation 
+        effects, to improve simulation realism.
+
+    \item \textbf{Simulation with Model Errors}: Investigating the performance of the 
+        task-priority controller under model uncertainties, such as inaccurate 
+        hydrodynamic parameters or thruster models, would provide valuable insights 
+        into the controller's robustness.
+
+    \item \textbf{Quaternion-based Orientation Control}: Euler angles are prone to gimbal lock, which can limit the controller's robustness in certain configurations. Future work could explore using quaternions for attitude control to eliminate this limitation and ensure continuous rotation representation.
+
+    \item \textbf{Advanced Control Strategies}: Implementing more advanced control 
+        strategies, such as adaptive control or sliding mode control, could improve
+        the controller's performance in the presence of disturbances and model
+        uncertainties.
+
+\end{itemize}
+
+By addressing these areas, future research can significantly bridge the gap between simulation results and real-world applications, advancing the deployment of light-UVMSs in practical underwater missions.
+
+
+
 
 % ------------------------------------------------------------------ Conclusion
-\subsection{Conclusion}
+\section{Conclusion}
 
-{\color{red}
-General feedback:
+This thesis explored task-priority control methodologies for lightweight 
+underwater vehicle-manipulator systems (light-UVMSs), specifically focusing on 
+both kinematic- and dynamic-level approaches. A custom simulation framework was 
+developed to compare the performance of these controllers in scenarios 
+involving multi-task prioritization. Key findings from this work include:
 \begin{itemize}
-    \item Write about the quaternions in future work
-    \item Tegnsetting av alle ligninger
-    \item More realistic simulation, current, simulation of thruster / motor dynamics.
+    \item \textbf{Dynamic-Level vs. Kinematic-Level Control}: Dynamic-level control 
+        demonstrated superior task tracking and prioritization capabilities, 
+        particularly in scenarios with conflicting task requirements. However, it comes 
+        with higher computational demands compared to kinematic-level control.
+    \item \textbf{Controller Robustness}: The use of variable damped least squares (VDLS) pseudoinverse significantly improved controller robustness near singular configurations, ensuring more stable force and torque outputs.
+    \item \textbf{Simulation Framework}: A reusable simulation framework capable of integrating advanced control algorithms was successfully implemented. This provides a foundation for future research and experimental validation.
 \end{itemize}
-}
+
+The results indicate that dynamic-level control is a promising approach for 
+light-UVMS applications, offering better performance in task execution and 
+prioritization. However, real-world validation remains necessary to confirm 
+these findings under non-ideal environmental conditions.
+
+The contributions of this thesis lay a foundation for future experimental 
+efforts and lays a foundation for deploying advanced task-priority control 
+strategies on real underwater robotic platforms. Continued research in this 
+area holds the potential to significantly enhance the capabilities of 
+light-UVMSs in environmental monitoring, underwater infrastructure inspection,
+and intervention tasks.

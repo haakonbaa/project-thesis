@@ -9,6 +9,7 @@ as well as an outline of the subsequent chapters.
 % ------------------------------------------------------------------ Motivation
 \section{Motivation}
 
+\iffalse
 {
     \color{red}
     \begin{itemize}
@@ -20,6 +21,32 @@ as well as an outline of the subsequent chapters.
         \item Need for realistic simulations and dynamic models when comparing TPC methods
     \end{itemize}
 }
+\fi
+Lightweight UVMSs, and specifically AIAUVs, are highly redundant systems.
+While this redundancy offers flexibility in task execution—allowing the system
+to avoid obstacles, optimize 
+energy consumption, and maintain stability, it also introduces significant 
+control challenges. Traditional control methods often fall short when managing 
+the coupling effects between the vehicle's base and its manipulator arms, 
+especially in lightweight systems where coupling is more pronounced. 
+Task-priority control emerges as an effective solution by allowing 
+multiple objectives to be prioritized and executed simultaneously. However, how 
+well TPC performs in the presence of modeling inaccuracies and disturbances 
+remains an open question. This thesis aims to bridge this knowledge gap by 
+analyzing and comparing kinematic- and dynamic-level TPC approaches in
+simulated scenarios.
+
+The development of advanced control strategies requires a reliable and 
+realistic simulation environment to test and validate performance before 
+deploying controllers on physical systems. For light-UVMSs, accurately 
+capturing hydrodynamic forces, coupling effects, and actuator dynamics is 
+crucial for minimizing the simulation-to-reality gap. Additionally, the high 
+computational demands of dynamic-level TPC algorithms necessitate efficient 
+simulation tools capable of real-time execution. This facilitates the
+need for a custom-built simulation framework designed for light-UVMSs, 
+enabling robust comparisons between different control strategies while 
+providing a foundation for experimental validation on platforms such as NTNU’s 
+Eelume 500 AIAUV.
 
 In 2015, the United Nations adopted the 2030 Agenda for Sustainable Development
 \cite{UN2030Agenda}, which outlines 17 Sustainable Development Goals (SDGs) to
@@ -29,8 +56,8 @@ contribute to the achievement of several of these goals. For example, \emph{SDG 
 Life Below Water}, "Conserve and sustainably use the oceans, seas and marine
 resources for sustainable development.". UVMSs can monitor and inspect underwater
 infrastructure, reducing the risk associated with oil spills, structural failures,
-or leaks. Furthermore, UVMSs controlled in a task-priority manner can perform automated
-high resolution imagery and data collection, identifying and mitigating potential
+or leaks. Furthermore, UVMSs controlled in a task-priority manner can collect automated
+high resolution imagery and data, identifying and mitigating potential
 damage and disruptions to marine ecosystems.
 
 \emph{SDG 9 Industry, Innovation, and Infrastructure} aims to "Build resilient
@@ -52,7 +79,6 @@ for sustainable innovation in underwater systems, contributing to a resilient
 and environmentally conscious future.
 
 % ------------------------------------------------------------ Literature Review
-\newpage
 \section{Literature Review}
 
 Some of the earliest works on task-priority control were introduced in 
@@ -77,16 +103,17 @@ singularities may cause strict task priority to break down. To mitigate these
 issues, the study introduced damped pseudo-inverse matrices as a solution.
 
 One notable limitation of the frameworks discussed so far is their assumption 
-of decoupled kinematics and dynamics. However, in real-world 
-systems—particularly in underwater vehicle-manipulator systems (UVMSs)—this 
+of decoupled kinematics and dynamics. However, for some systems—
+particularly in underwater vehicle-manipulator systems—this 
 assumption does not hold. To address this limitation, \cite{khatib1987} 
 proposed a framework for redundancy resolution at the dynamic level. This 
 approach incorporates task dynamics, employs feedback linearization techniques, 
 and utilizes dynamically consistent generalized inverses \cite{khatib1995} to 
-maintain strict task priority. However, this method relies heavily on an 
-accurate dynamic model, which can be a tradeoff for addressing coupled dynamics 
-and kinematics. The framework was further extended in \cite{khatib2004,sentis2004}, 
-allowing it to handle an arbitrary number of tasks effectively. In this work, a 
+maintain strict task priority.
+However, in order to address the couopled kinematics and dynamics of a system, one has to rely heavily on an accurate
+dynamic system model.
+The framework was further extended in \cite{khatib2004,sentis2004}, 
+allowing it to handle an arbitrary number of tasks efficiently. In this work, a 
 high-DOF humanoid robot was successfully controlled in a simulation study.
 
 Stability analysis of kinematic-level priority-based control schemes for 
@@ -101,7 +128,8 @@ A task-priority control scheme specifically applied to UVMSs was presented in
 \cite{antonelli1998}. This work employed a kinematic-level task-priority 
 control approach to control a 6-DOF articulated underwater vehicle (AUV) 
 equipped with a 3-DOF planar manipulator arm. While the simulation results were 
-promising, the study did not account for the system's dynamics.
+promising, the study did not account for the system's dynamics, leaving the question
+of how well the method performs when a dynamic model is considered.
 
 In recent years, approaches that incorporate dynamic considerations have been 
 developed. For example, \cite{basso2020} introduced a method that uses control 
@@ -111,7 +139,7 @@ the challenges posed by disturbances and modeling inaccuracies in UVMS
 dynamics, \cite{iversflaten2022} proposed a dynamic controller based on sliding 
 mode control. A simulation study demonstrated the effectiveness of this method 
 in handling these challenges. Regarding physical experiments on UVMSs, there 
-seem to be a lack of research that compares the performance of the proposed 
+seem to be a lack of research comparing the performance of the proposed 
 task-priority control methods in a real-world setting.
 
 
@@ -119,6 +147,7 @@ task-priority control methods in a real-world setting.
 % Might want to include some articles on vehicle modeling?
 
 % ----------------------------------------------------------------- Assumptions
+\iffalse
 \section{Assumptions}
 \begin{enumerate}
     \item \emph{The UVMS position and attidude, as well as their derivatives, are
@@ -126,9 +155,9 @@ task-priority control methods in a real-world setting.
     \item \emph{Assumption 2}
     \item \emph{Assumption 3}
 \end{enumerate}
+\fi
 
 % --------------------------------------------------------------- Contributions
-\iffalse
 \section{Contributions}
 
 The main contributions as presented in this thesis are as follows:
@@ -140,16 +169,16 @@ The main contributions as presented in this thesis are as follows:
     \item \emph{A simulation study comparing kinematic and dynamic level
         task-priority control methods for light-UVMS.}
 \end{itemize}
-\fi
 
 % -------------------------------------------------------------- Thesis Outline
 \section{Thesis Outline}
 
-\emph{Chapter 2} gives an overview of the background and preliminaries of the
+The rest of the thisis is organized as follows, \emph{Chapter 2} gives an 
+overview of the background and preliminaries of the
 thesis. The chapter introduces the mathematical tools and concepts used throughout
-the thesis. \emph{Chapter 3} presents the mathematical modelling of underwater
-vehicle manipulator systems (UVMs). \emph{Chapter 4} introduces the Python library
-\pymuvs and explains how it can be used to model underwater vehicles. \emph{Chapter 5}
-presents the simulation study comparing kinematic and dynamic level task-priority
+the thesis. \emph{Chapter 3} presents the mathematical modelling of UVMSs.
+\emph{Chapter 4} introduces the Python library
+\pymuvs{} and explains how it can be used to model underwater vehicles. \emph{Chapter 5}
+presents the simulation study comparing kinematic- and dynamic-level task-priority
 control methods for light-UVMS. \emph{Chapter 6} concludes the thesis and outlines
 possible future work.

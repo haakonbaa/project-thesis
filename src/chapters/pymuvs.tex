@@ -382,11 +382,11 @@ robot, as well as the transformations between the links. The \texttt{Link} class
 represents a single link in the robot, and its properties are mass, inertia matrix,
 volume, added mass matrix, linear damping matrix, quadratic damping matrix, center of
 mass, center of buoyancy and a set of wrenches acting on the link. All of these
-properties are defined numeric values, exept for the wrenches being its own class.
+properties are defined numeric values, except for the wrenches being its own class.
 Consisting of a set of links, and the transformations
 between them, the \texttt{Robot} class is used to define the UVMS. The \texttt{Robot} class
 has the \texttt{get\_model} method, which returns a \texttt{Model} object representing the
-dynamics of the robot. This function is arugably the most important and computationally
+dynamics of the robot. This function is arguably the most important and computationally
 demanding function in the library, as it computes the symbolic representation of the
 robot dynamics.
 
@@ -458,7 +458,7 @@ but it serves as a good starting point for understanding how to define a model i
 
 Along with the development of the \pymuvs{} library, a comprehensive test suite
 was created to ensure the correctness of the library. The test suit consists of
-tests of functionality for each submodule. The genrated C++ code has been tested
+tests of functionality for each submodule. The generated C++ code has been tested
 manually, but as of now there are no automated tests for the generated code. The
 unittests can be run by using the build-in \texttt{unittest} module in Python.
 \begin{verbatim}

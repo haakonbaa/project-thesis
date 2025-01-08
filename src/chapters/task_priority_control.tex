@@ -1,4 +1,5 @@
 \chapter{Task-Priority Control}
+\label{sec:tpc}
 
 This chapter explores various methods for task priority control, beginning with
 an introduction to its fundamental concepts and a presentation of one of the
@@ -25,7 +26,9 @@ A task refers to a specific objective or goal that a robotic system aims to achi
 
 The prioritization of tasks is a key aspect of task-priority control. When a task is assigned a higher priority, it must be executed without being disturbed or compromised by lower-priority tasks. This means that the control system must balance the objectives of multiple tasks, ensuring that the higher-priority tasks are achieved while still allowing the lower-priority tasks to be executed. In practice, higher priority tasks are resolved first, and the remaining degrees of freedom are used to achieve the lower-priority tasks. For example, a robotic manipulator tasked with avoiding obstacles might prioritize obstacle avoidance over maintaining an exact end-effector position.
 
+\sloppy{
 In the following sections, we will develop the mathematical foundations of task-priority control, exploring the concepts of velocity-, acceleration-, and force/torque-level control.
+}
 
 % -----------------------------------------------------------------------------
 \section{Kinematic-level Redundancy Resolution}
@@ -44,9 +47,9 @@ presented in \cite{chiaverini1997}.
 \label{sec:velocity_level_control}
 
 A task variable $\bm{\sigma}(t) \in \mathbb{R}^m$ is defined as a function of the robot's
-joint variables $\bm{q}(t) \in \mathbb{R}^n$.
+joint variables $\bm{q}(t) \in \mathbb{R}^n$:
 \begin{align}
-    \bm{\sigma}(t) = \bm{f}(\bm{q}(t)) \label{eq:def_task}
+    \bm{\sigma}(t) = \bm{f}(\bm{q}(t)) \label{eq:def_task}.
 \end{align}
 A task can then be defined as the objective of keeping the task variable $\bm{\sigma}(t)$
 close to a desired value $\bm{\sigma}_d(t) \in \mathbb{R}^m$. For instance, a task could
@@ -54,7 +57,8 @@ be the end-effector position of a robot manipulator or the orientation of a came
 on a robot. By differentiating \autoref{eq:def_task} with respect to time, the task velocity
 can be defined as
 \begin{align}
-    \dot{\bm{\sigma}}(t) = \frac{\partial \bm{f}(\bm{q}(t))}{\partial \bm{q}} \dot{\bm{q}}(t)= \bm{J}(\bm{q}(t)) \dot{\bm{q}}(t) \label{eq:def_task_jacobian}
+    \dot{\bm{\sigma}}(t) = \frac{\partial \bm{f}(\bm{q}(t))}{\partial \bm{q}}
+    \dot{\bm{q}}(t)= \bm{J}(\bm{q}(t)) \dot{\bm{q}}(t) \label{eq:def_task_jacobian}.
 \end{align}
 
 The matrix $\bm{J}(\bm{q}(t)) \in \mathbb{R}^{n \times m}$ is called the
@@ -71,7 +75,7 @@ where $\bm{J}^{+}(\bm{q}(t))$ is the pseudoinverse of the Jacobian at the curren
 joint configuration $\bm{q}(t)$. From now on the dependencies of $\bm{J}$, $\bm{q}$
 and $\bm{\sigma}$ will be omitted for brevity.
 
-In practice the jacobian might not represent the true kinematics of the robot.
+In practice the Jacobian might not represent the true kinematics of the robot.
 Furthermore, depending on the task, the desired task velocity might not be feasible,
 and there might be model errors and noise in the estimated joint velocities making
 the joint velocities not equal to the desired joint velocities. Because of this,
@@ -80,15 +84,15 @@ achieved. Substituting the desired task velocity $\dot{\bm{\sigma}}_d(t)$ in
 \autoref{eq:task_priority} with
 a feedforward term and a feedback term, the joint velocities can be computed as
 \begin{align}
-    \dot{\bm{q}}_d = \bm{J}^{+} \left(\dot{\bm{\sigma}}_d + \bm{\Lambda}\tilde{\bm{\sigma}}\right)
+    \dot{\bm{q}}_d = \bm{J}^{+} \left(\dot{\bm{\sigma}}_d + \bm{\Lambda}\tilde{\bm{\sigma}}\right),
 \end{align}
-Where $\tilde{\bm{\sigma}} = \bm{\sigma} - \bm{\sigma}_d$ is the error in the
+where $\tilde{\bm{\sigma}} = \bm{\sigma} - \bm{\sigma}_d$ is the error in the
 task and the constant matrix $\bm{\Lambda}$ is a matrix that determines the
 feedback gains.
 Generalizing this to multiple tasks, we note that \autoref{eq:def_task_jacobian}
 has a more general solution than \autoref{eq:task_priority} when $n > m$:
 \begin{align}
-    \dot{\bm{q}}_d = \bm{J}^{+} \dot{\bm{\sigma}}_d + (\mathbb{I} - \bm{J}^{+} \bm{J}) \bm{z}
+    \dot{\bm{q}}_d = \bm{J}^{+} \dot{\bm{\sigma}}_d + (\mathbb{I} - \bm{J}^{+} \bm{J}) \bm{z},
 \end{align}
 for some arbitrary vector $\bm{z} \in \mathbb{R}^n$. The term
 $(\mathbb{I}_n - \bm{J}^{+} \bm{J}) \bm{z}$ is recognized as the null space projection
@@ -128,6 +132,7 @@ Although, slight variations in the form of the null space projection matrices
 and the pseudoinverse matrices have been proposed. The methods include substituting
 the pseudoinverse with the transpose of the Jacobian, and using augmented null space
 projections.
+The augmented null space projection is defined as
 \begin{subequations}
     \label{eq:augmented_null_space}
 \begin{align}
@@ -167,23 +172,24 @@ From a computational perspective, the successive method is typically more effici
 
 The previous chapter discusses the velocity-level control of tasks. It is also 
 possible to determine the double derivative of the joint-space variables corresponding to some
-desired task acceleration. To see this, consider \autoref{eq:def_task_jacobian} and differentiate
+desired task acceleration. This is referred to as acceleration-level control.
+To see this, consider \autoref{eq:def_task_jacobian} and differentiate
 with respect to time once more:
 \begin{align}
     \ddot{\bm{\sigma}} = \frac{d}{dt}\left(\bm{J} \dot{\bm{q}}\right) = \dot{\bm{J}} \dot{\bm{q}} + \bm{J} \ddot{\bm{q}}
     \label{eq:task_acc_jacobian}
 \end{align}
-Writing the general solution to this equation solving for the joint accelerations
-$\ddot{\bm{q}}$ gives
+%Writing the general solution to this equation solving for the joint accelerations
+Solving this equation for the joint accelerations $\ddot{\bm{q}}$ gives
 \begin{align}
     \ddot{\bm{q}} = \bm{J}^{+} \left(\ddot{\bm{\sigma}} - \dot{\bm{J}}\dot{\bm{q}}\right) +
-    \left(\mathbb{I} - \bm{J}^{+}\bm{J}\right) \bm{z} \label{eq:task_acc_control}
+    \left(\mathbb{I} - \bm{J}^{+}\bm{J}\right) \bm{z} \label{eq:task_acc_control},
 \end{align}
 for some arbitrary vector $\bm{z} \in \mathbb{R}^n$. Inspired from the
 velocity-level control, one can define the desired joint accelerations as
 \begin{align}
     \ddot{\bm{q}}_d = \bm{J}^{+} \left(\ddot{\bm{\sigma}}_d
-    - \dot{\bm{J}}\dot{\bm{q}}\right) \label{eq:task_priority_acc}
+    - \dot{\bm{J}}\dot{\bm{q}}\right) \label{eq:task_priority_acc}.
 \end{align}
 One can impose the closed-loop characteristic of the task by defining the desired
 task acceleration implicitly as
@@ -194,14 +200,14 @@ task acceleration implicitly as
 \end{align}
 where $\bm{K}_d$ and $\bm{K}_p$ are positive definite matrices. Substituting
 \autoref{eq:task_acc} into the desired joint accelerations \autoref{eq:task_acc_jacobian},
-and doing this for each task, one can get the desired joint accelerations for each task.
+and doing this for each task, one can get the desired joint accelerations:
 \begin{subequations}
 \begin{align}
     \bm{J}_i\ddot{\bm{q}} &= -\dot{\bm{J}}_i\dot{\bm{q}} + \ddot{\bm{\sigma}}_{i,d} 
     + \bm{K}_{d,i}\left(\dot{\bm{\sigma}}_{i,d} - \dot{\bm{\sigma}}_i\right)
     + \bm{K}_{p,i}\left(\bm{\sigma}_{i,d} - \bm{\sigma}_i\right) \\
     &=: \bm{h}_i(\bm{q}, \dot{\bm{q}}, t) \\
-    \ddot{\bm{q}}_d &= \bm{J}_1^{+} \bm{h}_1 + \left(\mathbb{I} - \bm{J}_1^+\bm{J}_1\right) \bm{J}_2^{+} \bm{h}_2
+    \ddot{\bm{q}}_d &= \bm{J}_1^{+} \bm{h}_1 + \left(\mathbb{I} - \bm{J}_1^+\bm{J}_1\right) \bm{J}_2^{+} \bm{h}_2.
 \end{align}
 \end{subequations}
 This method is called acceleration-level task priority control. The method can
@@ -210,22 +216,21 @@ be generalized to multiple tasks by using the same methods as presented in \auto
 \subsection{Low level joint-space control}
 
 The aforementioned methods are, as previously mentioned, based on the assumption
-that a controller exists that can generate the desired joint velocities $\dot{\bm{q}}_d(t)$.
+that a controller exists that can generate the desired joint velocities $\dot{\bm{q}}(t)$ from $\dot{\bm{q}}_d(t)$.
 In practice, this is not always the case, and there is certainly no guarantee that
-$\dot{\bm{q}}_d(t) = \dot{\bm{q}}(t)$ at all times. This introduces the need for a
+$\dot{\bm{q}}(t) = \dot{\bm{q}}_d(t)$ at all times. This introduces the need for a
 low-level joint-space controller that aims to track the desired joint velocities.
-A simple PD controller is a simple way to achieve this;
+A simple PD controller is a simple way to achieve this:
 \begin{align}
     \bm{\tau}_d(t) :=  \bm{\tau}_{\mathrm{PD}}(t) =
         \bm{K}_p \left( \bm{q}_d(t) - \bm{q}(t) \right)
-        + \bm{K}_d \left( \dot{\bm{q}}_d(t) - \dot{\bm{q}}(t)\right) \label{eq:Kp_Kd}
+        + \bm{K}_d \left( \dot{\bm{q}}_d(t) - \dot{\bm{q}}(t)\right) \label{eq:Kp_Kd}.
 \end{align}
 Here, $\bm{K}_d$ and $\bm{K}_p$ are positive definite gain matrices to be tuned
 and $\bm{\tau}_d(t)$ is the desired generalized torques acting on the robot. A
 thruster allocation algorithm can be used to convert the generalized torques to
-actuator commands \cite{fossen2021}. $\bm{q}_d(t)$, and in the case of
-acceleration-level control, $\dot{\bm{q}}_d(t)$, can be calculated by
-integrating the desired joint velocities or accelerations
+actuator commands \cite{fossen2021}. $\bm{q}_d(t)$ and $\dot{\bm{q}}_d(t)$, can be calculated by
+integrating the desired joint velocities and accelerations
 \begin{subequations}
 \begin{align}
     \bm{q}_d(t) = \int_0^t \dot{\bm{q}}_d(t) \, d\tau \\
@@ -299,17 +304,18 @@ Consider the robot's dynamic model similar to models presented in previous secti
 \begin{subequations}
 \begin{align}
     \bm{M}(\bm{q}) \ddot{\bm{q}} + \bm{N}(\bm{q}, \dot{\bm{q}}) \dot{\bm{q}} + \bm{g}(\bm{q}) &= \bm{\tau} \\
-    \bm{q}, \dot{\bm{q}} ,\ddot{\bm{q}},\bm{\tau} &\in \mathbb{R}^n
+    \bm{q}, \dot{\bm{q}} ,\ddot{\bm{q}},\bm{\tau} &\in \mathbb{R}^n.
 \end{align}
 \end{subequations}
 In the equation above, $N(\bm{q}, \dot{\bm{q}})$ represents the Coriolis and
 damping forces acting on the robot. We consider a case with $2$ tasks, $\bm{\sigma}_t$
 and $\bm{\sigma}_p$, and the corresponding Jacobians $\bm{J}_t$ and $\bm{J}_p$.
+The essential equations concerning the tasks are:
 \begin{subequations}
     \begin{align}
         \dot{\bm{\sigma}}_t &= \bm{J}_t(\bm{q}) \dot{\bm{q}} & \dot{\bm{\sigma}}_p &= \bm{J}_p(\bm{q}) \dot{\bm{q}} \\
         \ddot{\bm{\sigma}}_t &= \bm{J}_t(\bm{q}) \ddot{\bm{q}} + \dot{\bm{J}}_t(\bm{q}) \dot{\bm{q}} &
-        \ddot{\bm{\sigma}}_p &= \bm{J}_p(\bm{q}) \ddot{\bm{q}} + \dot{\bm{J}}_p(\bm{q}) \dot{\bm{q}}
+        \ddot{\bm{\sigma}}_p &= \bm{J}_p(\bm{q}) \ddot{\bm{q}} + \dot{\bm{J}}_p(\bm{q}) \dot{\bm{q}}.
     \end{align}
 \end{subequations}
 We define a dynamically consistent generalized inverse \cite{khatib1987} as
@@ -317,7 +323,7 @@ We define a dynamically consistent generalized inverse \cite{khatib1987} as
     \begin{align}
         \bar{\cdot} &: \R^n \times \R^{m\times n} \rightarrow \R^{m\times n} & m &= 1, \cdots, n\\
         \bar{\cdot} &: (\bm{q},\bm{X}) \mapsto \bm{M}^{-1}(\bm{q})\bm{X}^T\left(
-            \bm{X}\bm{M}^{-1}(\bm{q})\bm{X}^T
+            \bm{X}\bm{M}^{-1}(\bm{q})\bm{X}^T.
         \right)^{-1}
     \end{align}
 \end{subequations}
@@ -439,11 +445,11 @@ First, consider the problem of taking the pseudoinverse of an arbitrary matrix $
 As discussed in \autoref{sec:pseudoinverse}, the SVD of a matrix $\bm{J}$ can be
 written as
 \begin{align}
-    \bm{J} = \bm{U} \bm{\Sigma} \bm{V}^T
+    \bm{J} = \bm{U} \bm{\Sigma} \bm{V}^T,
 \end{align}
 and the pseudoinverse of $J$ is
 \begin{align}
-    \bm{J}^+ = \bm{V} \bm{\Sigma}^+ \bm{U}^T
+    \bm{J}^+ = \bm{V} \bm{\Sigma}^+ \bm{U}^T.
 \end{align}
 Rewriting the $\bm{U}$ and $\bm{V}$ matrices as
 \begin{subequations}
@@ -457,22 +463,22 @@ $\bm{J}$ and its pseudoinverse can be written as
 \begin{subequations}
 \begin{align}
     \bm{J} &= \sum_{i=1}^r \sigma_i \bm{u}_i \bm{v}_i^T \\
-    \bm{J}^+ &= \sum_{i=1}^r \frac{1}{\sigma_i} \bm{v}_i \bm{u}_i^T
+    \bm{J}^+ &= \sum_{i=1}^r \frac{1}{\sigma_i} \bm{v}_i \bm{u}_i^T.
 \end{align}
 \end{subequations}
 From this, it is clear that when $\sigma_i$ is close to zero, the pseudoinverse
 will be very sensitive to small changes in $\sigma_i$. One proposed solution to
 this problem is the so-called \emph{damped pseudoinverse} which is defined as
 \begin{align}
-    \bm{J}^* := \sum_{i=1}^r \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \bm{v}_i \bm{u}_i^T
+    \bm{J}^* := \sum_{i=1}^r \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \bm{v}_i \bm{u}_i^T.
 \end{align}
 We see that for large values of $\sigma_i$,
 \begin{align}
-    \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \approx \frac{1}{\sigma_i}
+    \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \approx \frac{1}{\sigma_i},
 \end{align}
 and for small values of $\sigma_i$,
 \begin{align}
-    \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \approx 0
+    \frac{\sigma_i}{\sigma_i^2 + \lambda^2} \approx 0.
 \end{align}
 This will make the pseudoinverse well-conditioned for all values of $\sigma_i$.
 The trade-off is that the damped pseudoinverse will not be the true pseudoinverse.
@@ -488,10 +494,20 @@ The VDLSI is defined as
     \bm{J}^{\circ} := \sum_{i=1}^r \frac{\sigma_i}{\sigma_i^2 + \lambda_i^2(\sigma_i)} \bm{v}_i \bm{u}_i^T \\
     \lambda_i^2(\sigma_i) = \begin{cases}
         0 & ,\sigma_i \geq \varepsilon \\
-        \left(1-\left(\frac{\sigma_i}{\varepsilon}\right)^2\right)\lambda_{max}^2 & ,\sigma_i < \varepsilon
+        \left(1-\left(\frac{\sigma_i}{\varepsilon}\right)^2\right)\lambda_{max}^2 & ,\sigma_i < \varepsilon,
     \end{cases}
 \end{align}
 \end{subequations}
 where $\lambda_{max}^2$ and $\varepsilon$ are parameters that can be tuned. $\lambda_{max}$
 determines the maximum damping factor and $\varepsilon$ determines a threshold for when
 to start damping the pseudoinverse based on how close the singular values are to zero.
+To better illustrate the difference between the different methods, see \autoref{fig:1_x}
+showing the LSI, VLSI and VDLSI on a scalar matrix for $\lambda=\epsilon=0.1$.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{assets/singval.pdf}
+    \caption{Comparison of the LSI, VLSI and VDLSI on a scalar matrix.}
+    \label{fig:1_x}
+\end{figure}
+

@@ -96,7 +96,7 @@ The $\beta$, $\gamma$, $v_{\mathrm{ref}}$ and $C_D$ parameters specify the dampi
 coefficients of the robot. The damping matrix the parameters specify is given in
 \autoref{eq:damping_cyl}. These parameters are based on \cite{bendik}. Added mass
 is computed based on \autoref{eq:ellipsoid_added_mass}.
-The inertia matrix of the robot is appriximated as a
+The inertia matrix of the robot is approximated as a
 cylinder with uniform density and is as follows:
 
 \begin{align}
@@ -118,12 +118,12 @@ specifications of the position and orientation of the thrusters can be seen in
     \begin{tabular}{|c|c|c|c|c|c|c|}
         \hline
         Link & Number & Thruster & $x$ [m] & $y$, [m] & $z$, [m] & Direction \\ \hline
-        $2$ & 1 & Starboard & $0.56725$ & $-0.174$ & $0$ & Sout-Up \\
-        $2$ & 2 & Port & $0.56725$ & $0.174$ & $0$ & Sout-Down \\
+        $2$ & 1 & Starboard & $0.56725$ & $-0.174$ & $0$ & South-Up \\
+        $2$ & 2 & Port & $0.56725$ & $0.174$ & $0$ & South-Down \\
         $2$ & 3 & Bottom & $0.67725$ & $0.000$ & $0.09$ & East \\
         $2$ & 4 & Top & $0.67725$ & $0.000$ & $-0.09$ & West \\ \hline
-        $3$ & 5 & Starboard & $0.02025$ & $-0.174$ & $0$ & Sout-Down \\
-        $3$ & 6 & Port & $0.02025$ & $0.174$ & $0$ & Sout-Up \\
+        $3$ & 5 & Starboard & $0.02025$ & $-0.174$ & $0$ & South-Down \\
+        $3$ & 6 & Port & $0.02025$ & $0.174$ & $0$ & South-Up \\
         $3$ & 7 & Bottom & $-0.08975$ & $0.000$ & $0.09$ & West \\
         $3$ & 8 & Top & $-0.08975$ & $0.000$ & $-0.09$ & East \\
         \hline
@@ -134,7 +134,7 @@ specifications of the position and orientation of the thrusters can be seen in
 
 The transformations between the thruster positions and the link center are given
 as transformations described in $\SE$. Let $\bm{T}_{\rightarrow}$ and $\bm{T}_{\angle}$
-dente functions that return the transformation matrix corresponding to a translation
+be the functions that return the transformation matrix corresponding to a translation
 or rotation, respectively. The transformations can be defined as follows:
 \begin{subequations}
 \begin{align}
@@ -149,10 +149,6 @@ or rotation, respectively. The transformations can be defined as follows:
 \end{subequations}
 The transformation matrices are then given as:
 
-%Tl1_to_body = se3.trans(lengths[1]/2+jlhs, 0, 0) @ se3.rot_y(a3) @ se3.rot_z(a4) @ se3.trans(lengths[0]/2+jlhs, 0, 0)
-%    Tl3_to_body = se3.inv(
-%            se3.trans(lengths[2]/2+jlhs, 0, 0) @ se3.rot_y(a1) @ se3.rot_z(a2) @ se3.trans(lengths[1]/2+jlhs, 0, 0)
-%            )
 \begin{align}
     \bm{T}_1^2 &= \bm{T}_{\rightarrow}\left( \begin{bmatrix} \frac{l_1}{2}+\frac{l_{\textrm{joint}}}{2} \\ 0 \\ 0\end{bmatrix}\right)
         \bm{T}_{\angle}\left( \begin{bmatrix} 0 \\ a_3 \\ 0\end{bmatrix}\right)
@@ -185,7 +181,7 @@ From the parameters stated above, the dynamics of the robot, on the form of
 
 Two simple tasks will be used in the simulation. The first task is a position
 task, where the "tail" of the robot is to be positioned at the origin of the
-NED coordinate system. The second task is to drack a trajectory with the outer
+NED coordinate system. The second task is to track a trajectory with the outer
 most point of the "head" of the robot. The trajectory starts close to the origin,
 meaning that in the beginning of the simulation, the robot will be able to
 complete both tasks. As the trajectory moves further away from the origin, it
@@ -231,13 +227,13 @@ The kinematic-level control method used in the simulation is the velocity-level
 controller presented in \autoref{sec:velocity_level_control}. As we are only considering
 a case with two tasks, the question of successive versus augmented nullspace projections
 are irrelevant. The projections used in the controller are inverse based
-and the low-levl joint-space controller chosen is a PD+ controller
+and the low-level joint-space controller chosen is a PD+ controller
 with buoyancy/gravity compensation. Because of the simplicity of the shape of the robot,
 these forces are relatively well known in a real-world scenario.
 
 The gain matrices $\bm{K}_p$ and $\bm{K}_d$ as presented in \autoref{eq:Kp_Kd}
-are chosen based on the assumption that the mass, coreolis, damping and added mass
-matrices are known, constant and diagonal. Under theis assumption, the system model is approximated
+are chosen based on the assumption that the mass, Coreolis, damping and added mass
+matrices are known, constant and diagonal. Under thesis assumption, the system model is approximated
 as
 \begin{align}
     \bar{\bm{M}}(\bm{0}) \ddot{\bm{q}} + \bar{\bm{C}}(\bm{0}, \dot{\bm{0}}) \dot{\bm{q}} +
@@ -249,6 +245,7 @@ a set of $n$ second-order systems with the same natural frequency and damping ra
 In this case, the natural frequency is chosen as $\omega_n = \pi/6$ and the damping ratio
 as $\zeta = 1$. Using this approximation, the gains are chosen as
 \begin{subequations}
+    \label{eq:kin:gains}
 \begin{align}
     \bm{K}_p &= \operatorname{diag}\left(122, 206, 206, 0.5, 664.428, 664.428, 78, 78, 32, 32\right) \\
     \bm{K}_d &= \operatorname{diag}\left(306, 479, 479, 1, 1531, 1531, 195, 195, 65, 65\right).
@@ -279,7 +276,15 @@ are computed as:
 Because of the two tasks being incompatible at some point, the $\bm{\Lambda}_{p|t}$
 matrix can not be computed using an ordinary inverse, as this will give numerical issues.
 Instead, different methods of damped pseudoinverses presented in \autoref{sec:tpc:sing_robust}
-are used. The parameters and the spesific method used are presented in \autoref{sec:simulation:results}.
+are used. The parameters and the specific method used are presented in \autoref{sec:simulation:results}.
+
+The damped pseudoinverses that are used are
+\begin{itemize}
+    \item Least squares (LS).
+    \item Damped least squares (DLS) with $\lambda = 0.1$.
+    \item Variable damped least squares (VDLS) with $\lambda = 0.1$ and $\epsilon = 0.1$.
+\end{itemize}
+Details are presented in in \autoref{sec:tpc:sing_robust}.
 
 \subsection{Simulation Environment}
 
@@ -289,7 +294,7 @@ but not task $0$, the trajectory tracking task. This was done to show convergenc
 to the task when having an error in the initial conditions. The initial state
 can be seen in \autoref{tab:initial} and \autoref{fig:init_pos}. The initial velocity
 is set to $\bm{0}$. The figure
-shows the position of the three links as well as their orientation as visualised
+shows the position of the three links as well as their orientation as visualized
 by the red, green and blue arrows symbolizing the $x$, $y$ and $z$ axes of the
 links.
 \begin{table}[h!]
@@ -351,54 +356,44 @@ will give an indication of how realistic the controllers are. Too high or too
 fast varying joint torques can be a sign of numerical instability.
 
 % -----------------------------------------------------------------------------
-\iffalse
-\section{Simulation Scenarios}
-\begin{enumerate}
-    \item Kinematic-level control as described in ...
-    \item Dynamic-level control as described in .... The damping of ... is chosen
-        as
-    \begin{enumerate}
-            \item pseuodo-inverse
-            \item damped pseudo-inverse, $\lambda = 0.1$
-            \item variable damped pseudo-inverse, $\lambda = 0.1$, $\epsilon = 0.1$
-    \end{enumerate}
-    \item Kinematic level controll with disturbance and erroneous model (gain matrices
-    based on the model)
-    \item Dynamic level control with disturbance and erroneous model
-\end{enumerate}
-\fi
 
 % -----------------------------------------------------------------------------
 \newpage
 \section{Results and Discussion}
-\label{sec:simulation:results}.
+\label{sec:simulation:results}
 
 % -----------------------------------------------------------------------------
 \subsection{Kinematic-level Control}
+
+The following subsection presentes the result of the simulation using the
+kinematic level controller.
+
+\subsubsection{Task error}
+
+The task error for this controller are presented in \autoref{fig:kin:task_error}.
+One can see that the controller struggles to complete both tasks simultaneously,
+and that the task error for task $0$ is generally higher than that of task $1$.
+From \autoref{fig:kin:task_error}, one can see that there is some time delay
+when tracking the desired velocity. Furthermore, the implemented controller
+struggles to track the desired roll rate. Some snapshots of the position of the
+robot are shown in \autoref{fig:kin:vis}. This figure clearly shows that the
+robot starts off by adjusting the position as to satisfy both tasks. It is evident
+that it is not able to track both tasks perfectly. At the end of the simulation,
+a clear prioritization of task $0$ is seen, as well as a change in the roll angle.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[page=2,width=\linewidth]{assets/results/kinematic/h5data.pdf}
     \caption{Task space error using kinematic-level control.}
-    \label{}
+    \label{fig:kin:task_error}
 \end{figure}
 \begin{figure}[h!]
     \centering
-    \includegraphics[page=3,width=\linewidth]{assets/results/kinematic/h5data.pdf}
-    \caption{Computation time at each time-step using kinematic-level control.}
-    \label{}
+    \includegraphics[page=9,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \includegraphics[page=10,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \caption{Desired and actual velocities using kinematic-level control.}
+    \label{fig:kin:vel_des}
 \end{figure}
-
-\begin{table}[h!]
-    \centering
-    \begin{tabular}{|c|c|}
-        \hline
-        Mean & Standard Deviation \\ \hline
-        22.5 $\mu$s & 2.4 $\mu$s \\ \hline
-    \end{tabular}
-    \caption{Computation time using kinematic-level control.}
-\end{table}
-
 \begin{figure}[h!]
     \centering
     \begin{subfigure}[b]{0.45\linewidth}
@@ -420,9 +415,51 @@ fast varying joint torques can be a sign of numerical instability.
         \includegraphics[page=6,width=\linewidth]{assets/results/kinematic/gif.pdf}
     \end{subfigure}
     \caption{Visualisation of the position of the robot using kinematic-level control.}
-    \label{fig:kinematic_vis}
+    \label{fig:kin:vis}
 \end{figure}
 
+\subsubsection{Computation Time}
+
+The computation time for the kinematic-level controller is presented in \autoref{fig:kin:comp_time}
+and \autoref{tab:kin:comp_time}. The computation time is relatively low, with a mean of $22.5$ $\mu$s.
+and a standard deviation of $2.4$ $\mu$s. There are some outliers in \autoref{fig:kin:comp_time},
+showing that the computation time can be up to approximately $5$ times higher than the mean
+for a few time steps during the simulation.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=3,width=\linewidth]{assets/results/kinematic/h5data.pdf}
+    \caption{Computation time at each time-step using kinematic-level control.}
+    \label{fig:kin:comp_time}
+\end{figure}
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Mean & Standard Deviation \\ \hline
+        22.5 $\mu$s & 2.4 $\mu$s \\ \hline
+    \end{tabular}
+    \caption{Computation time using kinematic-level control.}
+    \label{tab:kin:comp_time}
+\end{table}
+
+\subsubsection{Thruster and Joint Torque Usage}
+\autoref{fig:kin:forces} shows the forces and torques applied to the robot by the
+motors and thrusters. All the torques have an absolute value of less than $30$ Nm,
+with significantly lower values after the first couple of seconds. One observes
+that the forces are smooth and do not have any large spikes or discontinuities.
+The same can be said for the thruster forces, wich all have an absolute value of less
+than $50$ Nm.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=7,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \includegraphics[page=8,width=\linewidth]{assets/results/kinematic/plot.pdf}
+    \caption{Forces and torques applied to the robot using kinematic-level control.}
+    \label{fig:kin:forces}
+\end{figure}
+
+
+\iffalse
 \begin{figure}[h!]
     \centering
     \includegraphics[page=1,width=\linewidth]{assets/results/kinematic/plot.pdf}
@@ -433,51 +470,31 @@ fast varying joint torques can be a sign of numerical instability.
     \includegraphics[page=5,width=\linewidth]{assets/results/kinematic/plot.pdf}
     \caption{Positions and velocities of the robot in the NED frame using kinematic-level control.}
 \end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[page=7,width=\linewidth]{assets/results/kinematic/plot.pdf}
-    \includegraphics[page=8,width=\linewidth]{assets/results/kinematic/plot.pdf}
-    \caption{Forces and torques applied to the robot using kinematic-level control.}
-\end{figure}
-
-
-
-
+\fi
 
 \FloatBarrier
 % -----------------------------------------------------------------------------
 \subsection{Dynamic-level Control}
 
-\begin{figure}[h!]
-    \centering
-    \includegraphics[page=1,width=\linewidth]{assets/results/dynamic/h5data.pdf}
-    \caption{Contdition number of mass matrices using dynamic-level control.}
-    \label{}
-\end{figure}
+The following subsection presents the result of the simulation ising the dynamic-level
+controller. The controller is used with the VDLS pseudoinverse method. A comparison
+of the different pseudoinverse methods is presented later in this section.
+
+\subsubsection{Task Error}
+The task error can be seen in \autoref{fig:dyn:error}. The task error for task $0$
+starts off high, as expected, but quickly moves towards zero. the $1$ task error
+is generally higher than that of task number $0$. Expecially towards the end of the
+simulation. An illustration of the position at specific time steps can be seen in
+\autoref{fig:dynamic_vis}. One can see that the robot is able to track both tasks
+in the beginning of the simulation. As fullfilling both tasks becomes impossible,
+there is a clear prioritization of task $0$ over task $1$.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[page=2,width=\linewidth]{assets/results/dynamic/h5data.pdf}
     \caption{Task space error using dynamic-level control.}
-    \label{}
+    \label{fig:dyn:error}
 \end{figure}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[page=3,width=\linewidth]{assets/results/dynamic/h5data.pdf}
-    \caption{Computation time at each time-step using dynamic-level control.}
-    \label{}
-\end{figure}
-
-\begin{table}[h!]
-    \centering
-    \begin{tabular}{|c|c|}
-        \hline
-        Mean & Standard Deviation \\ \hline
-        48.5 $\mu$s & 3.4 $\mu$s \\ \hline
-    \end{tabular}
-    \caption{Computation time using dynamic-level control.}
-\end{table}
 
 \begin{figure}[h!]
     \centering
@@ -503,30 +520,222 @@ fast varying joint torques can be a sign of numerical instability.
     \label{fig:dynamic_vis}
 \end{figure}
 
+\subsubsection{Computation Time}
+
+The computation time for the dynamic-level controller is presented in \autoref{fig:dyn:comp_time}
+and \autoref{tab:dyn:comp_time}. The computation time is relatively low, with a mean of $48.5$ $\mu$s
+and a standard deviation of $3.4$ $\mu$s. There are some outliers in \autoref{fig:dyn:comp_time},
+reaching values of up to $170$ $\mu$s.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Mean & Standard Deviation \\ \hline
+        48.5 $\mu$s & 3.4 $\mu$s \\ \hline
+    \end{tabular}
+    \caption{Computation time using dynamic-level control.}
+    \label{tab:dyn:comp_time}
+\end{table}
+
 \begin{figure}[h!]
     \centering
-    \includegraphics[page=1,width=\linewidth]{assets/results/dynamic/plot.pdf}
-    \includegraphics[page=2,width=\linewidth]{assets/results/dynamic/plot.pdf}
-    \includegraphics[page=3,width=\linewidth]{assets/results/dynamic/plot.pdf}
-    \includegraphics[page=6,width=\linewidth]{assets/results/dynamic/plot.pdf}
-    \includegraphics[page=4,width=\linewidth]{assets/results/dynamic/plot.pdf}
-    \includegraphics[page=5,width=\linewidth]{assets/results/dynamic/plot.pdf}
-    \caption{Positions and velocities of the robot in the NED frame using dynamic-level control.}
+    \includegraphics[page=3,width=\linewidth]{assets/results/dynamic/h5data.pdf}
+    \caption{Computation time at each time-step using dynamic-level control.}
+    \label{fig:dyn:comp_time}
 \end{figure}
+
+\subsubsection{Thruster and Joint Torque Usage}
+
+The forces and torques applied to the robot by the motors and thrusters are presented
+in \autoref{fig:dyn:forces}. The joint torques stars of low in amplitude, reaching no more than
+approximately $7$ Nm. They do however somewhat high frequency content. The same can be said
+for the thruster forces. They start of low in amplitude and reach no more than approximately
+$10$ N of force. Similarly to the torques, they have a somewhat high frequency content.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[page=7,width=\linewidth]{assets/results/dynamic/plot.pdf}
     \includegraphics[page=8,width=\linewidth]{assets/results/dynamic/plot.pdf}
     \caption{Forces and torques applied to the robot using dynamic-level control.}
+    \label{fig:dyn:forces}
 \end{figure}
 
-\FloatBarrier
+\subsubsection{Pseudoinverse Methods}
 
+The results of the simulation using the different pseudoinverse methods are presented
+in \autoref{fig:ls}, \autoref{fig:dls} and \autoref{fig:vdls}. We observe that the
+VDLS- and DLS-pseudoinverse methods are very similar in terms of both task error and
+singular values of the Jacobian. The LS-pseudoinverse method, however, gives a much
+better results in terms of task error. The singular values using this method are
+also much lower than the other two methods, being as low as $0.05$.
+
+Looking at the desired forces outputed by the controllers in \autoref{fig:ls_vdls_force},
+one can see that the VDLS-pseudoinverse gives a much smoother force output compared
+to the LS-pseudoinverse. The point at which the forces applied by the LS-pseudoinverse
+controller are much higher coencides with the time interval where the singular values
+are low in \autoref{fig:ls}. The forces applied using the LS-psuedoinverse reaches
+a maximum of $100$ N, which is the maximum force allowed in the simulation.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=1,width=\linewidth]{assets/results/LSI.pdf}
+    \includegraphics[page=2,width=\linewidth]{assets/results/LSI.pdf}
+    \caption{Task space error and singular values using LS pseudoinverse.}
+    \label{fig:ls}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=1,width=\linewidth]{assets/results/DLSI.pdf}
+    \includegraphics[page=2,width=\linewidth]{assets/results/DLSI.pdf}
+    \caption{Task space error and singular values using DLS pseudoinverse.}
+    \label{fig:dls}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[page=1,width=\linewidth]{assets/results/VDLSI.pdf}
+    \includegraphics[page=2,width=\linewidth]{assets/results/VDLSI.pdf}
+    \caption{Task space error and singular values using VDLS pseudoinverse.}
+    \label{fig:vdls}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{\linewidth}
+        \includegraphics[page=1,width=\linewidth]{assets/ls_vdls_force.pdf}
+        \caption{Forces using dynamic-level control with LS pseudoinverse.}
+    \end{subfigure}
+    \begin{subfigure}[b]{\linewidth}
+        \includegraphics[page=2,width=\linewidth]{assets/ls_vdls_force.pdf}
+        \caption{Forces using dynamic-level control with VDLS pseudoinverse.}
+    \end{subfigure}
+    \caption{Comparison of forces using LS and VDLS pseudoinverse.}
+    \label{fig:ls_vdls_force}
+\end{figure}
+
+% -----------------------------------------------------------------------------
+\FloatBarrier
 \subsection{Discussion}
+
+\subsubsection{Kinematic-level Control}
+
+Using the dynamic-level controller we observe in \autoref{fig:kin:task_error} that
+the task space error is fluctuating and relatively high. Using the framework derived
+in \autoref{sec:tpc} we would expect perfect tracking of the task, under the assumption
+that we can track the desired joint velocities, meaning $\bm{q}(t) = \bm{q}_d(t)$.
+From \autoref{fig:kin:vel_des} we see that the desired velocities are tracked,
+but that there is some time delay in the tracking. This is expected, and is due
+to the fact that we are using a PD+ with no feedforward term to track the desired
+joint velocities. This creates a time delay in the tracking, making the task space
+errors non-zero.
+
+In \autoref{fig:kin:task_error} we see that the time delay in the tracking of the
+reference velocities are similar across all variables, except for the roll angle.
+Looking at the chosen gains from \autoref{eq:kin:gains} we observe that the fourth
+entry in the gain matrix is very low compared to the other gains. This is a result
+of the way the gains are chosen. There might be some large copling terms in the
+dynamics that are not accounted for when choosing gains from the diagonalized
+approximation of the system. Choosing a different method of choosing the gains
+and spending more time on tuning the controller might give better results. This
+might also explain why we see a change in the roll angle at the last time
+step in \autoref{fig:kin:vis}. The controller is not able to track the desired
+roll rate, affecting the roll angle.
+
+The average computation time, as presented in \autoref{tab:kin:comp_time}, is very low.
+This is a very good indication that the controller can be implemented on a physical
+system. The standard deviation is also very low, meaning that the computation time
+is relatively stable. The outliers in \autoref{fig:kin:comp_time} might be due to
+the computer interrupting the process, or some other external factor. It is important
+to note that the simulator was not run in a real-time environment, meaning that
+inconsistencies in the computation time are to be expected.
+
+The forces and torques applied to the robot are presented in \autoref{fig:kin:forces}.
+All of the values are reasonable, and the forces are very smooth. This is a good
+indication that the controller is suited for a physical system, where thrust limitations
+and thruster dynamics are important to consider. Overall, the kinematic-level controller
+performs okay, but there is room for improvement. The high task space error is
+concerning, and the controller is not able to track the desired roll rate needs
+to be addressed. These problems may however be solved by spending more time finding
+a good lower-level controller and tuning the gains of this controller.
+
+\subsubsection{Dynamic-level Control}
+
+\autoref{fig:dyn:error} shows the task error when using the VDLS pseudoinverse.
+It shows a promising convergence of the primary task, task $0$. Even after the
+fulfilling both tasks become impossible, the error for the primary task stays
+relatively constant. It is a bit interesting that the tracking of task $1$ is
+relatively poor. This can be due to the fact that the VDLS pseudo-inverse is used
+instead of a proper inverse. This will be discussed in more detail when comparing
+pseudoinverse methods later in this chapter.
+
+In \autoref{tab:dyn:comp_time} we can see the computation time for the dynamic-level
+controller. It has a relatively stable computation time, with a mean of $48.5$ $\mu$s
+and a standard deviation of $3.4$ $\mu$s. This is well within the limits of what
+is required for a physical system. The outliers in \autoref{fig:dyn:comp_time},
+as mentioned earlier, might be due to the computer interrupting the process.
+
+\autoref{fig:dyn:forces} shows that the forces and torques computed by the controller
+are reasonable in amplitude, but have a somewhat high frequency content. Although
+not too high, this might cause problem for a physical system with thruster dynamics,
+where the thrusters might not be able to keep up with the high frequency content.
+Physical tests are needed to determine if the controller is feasible for a real-world
+system.
+
+When comparing the different pseudoinverse methods in \autoref{fig:vdls} and
+\autoref{fig:dls}, we see that the VDLS and DLS methods give very similar results.
+This can be explained by looking at \autoref{fig:1_x}. Notice that the VDLS and
+DLS give very similar singular values. This explains why the task error is similar
+for the two methods. The LS method, however, gives a much better result in terms
+of task error. This can be explained by looking at the smallest singular value
+of the Jacobian in the same graph. We see that the singular values are much lower
+in a time interval after approximately $35$ seconds. This will imply greater
+forces and torques, as the mass matrix, a function of the Jacobian, is inverted.
+This is also observed in \autoref{fig:ls_vdls_force}, where very high and oscillating
+forces are shown. The observed difference in error can therefore be explained by
+the accuracy of the inverses. The LS method gives much better results in terms of
+task error, but the forces and torques are not realistic. The VDLS and DLS methods
+give more realistic forces and torques, but the task error is higher. This is a
+trade-off that needs to be considered when choosing a pseudoinverse method.
+
 \subsection{Comparative Analysis}
 
-\begin{itemize}
-    \item Simulation study comparing velocity- and acceleration-level task-priority
-        control methods for light-UVMS.
-\end{itemize}
+Comparing the two controllers we observe that the kinematic-level controller has
+a higher task error than the dynamic-level controller. This can in part be explained
+by the fact that the kinematic-level controller
+is dependent on a lower-level joint controller, which might not be able to track
+the desired velocities. Coupling terms between the kinematic and dynamic levels
+will affect the performance of the kinematic-level controller. The dynamic level controller
+commands forces which are a bit lower in amplitude, especially in the beginning,
+but have a higher frequency content than the dynamic-level controller. 
+
+The kinematic-level controller has a lower computation time than the dynamic-level.
+\autoref{tab:kindyn:comp_time} shows that the kinematic-level controller has about
+half the computation time of the dynamic-level controller. It can be argued that
+this does not matter, as both controllers run at a frequency so high that they
+are both fit for real-time implementations.
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Controller & Mean & Standard Deviation \\ \hline
+        Kinematic & 22.5 $\mu$s & 2.4 $\mu$s \\
+        Dynamic & 48.5 $\mu$s & 3.4 $\mu$s \\ \hline
+    \end{tabular}
+    \caption{Computation time for the two controllers.}
+    \label{tab:kindyn:comp_time}
+\end{table}
+
+Using the LS pseudoinverse, the dynamic-level controller gives the best results.
+This is however at the cost of realistic forces and torques. The VDLS and DLS
+give more realistic thruster and joint torques, but the task error is higher. Overall,
+the VDLS and DLS methods are more suited for a real-world scenario, and will
+probably give better results in practice.
+
+From the simulation study, it seems like the dynamic-level controller is more
+suitable for controlling the Eelume 500 robot. It has a lower task error, reasonable
+forces and torques, and the computation time is still low enough for real-time
+implementations.An important unanswered question still remains; how well does the
+dynamic-level controller perform when the model is inaccurate? This is a question
+that needs to be answered in order to truly determine the which controller is best.

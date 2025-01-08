@@ -217,17 +217,17 @@ where
 \begin{align}
     \bm{R}_x(\phi) &= \begin{bmatrix}
         1 & 0 & 0 \\
-        0 & \cos(\phi) & -\sin(\phi) \\
-        0 & \sin(\phi) & \cos(\phi)
+        0 & \cos\phi & -\sin\phi \\
+        0 & \sin\phi & \cos\phi
     \end{bmatrix}, \\
     \bm{R}_y(\theta) &= \begin{bmatrix}
-        \cos(\theta) & 0 & \sin(\theta) \\
+        \cos\theta & 0 & \sin\theta \\
         0 & 1 & 0 \\
-        -\sin(\theta) & 0 & \cos(\theta)
+        -\sin\theta & 0 & \cos\theta
     \end{bmatrix}, \\
     \bm{R}_z(\psi) &= \begin{bmatrix}
-        \cos(\psi) & -\sin(\psi) & 0 \\
-        \sin(\psi) & \cos(\psi) & 0 \\
+        \cos\psi & -\sin\psi & 0 \\
+        \sin\psi & \cos\psi & 0 \\
         0 & 0 & 1
     \end{bmatrix}.
 \end{align}
@@ -442,21 +442,22 @@ of the system is then a function $T$ of $\bm{q}$ and $\bm{\dot{q}}$
 \end{align}
 and the potential energy is a function $U$ of $\bm{q}$
 \begin{align}
-    U = U(\bm{q})
+    U = U(\bm{q}).
 \end{align}
 Define the lagrangian $L$ as the difference between the kinetic and potential
 energy
 \begin{align}
-    L(\bm{q}, \bm{\dot{q}}) = T(\bm{q}, \bm{\dot{q}}) - U(\bm{q})
+    L(\bm{q}, \bm{\dot{q}}) = T(\bm{q}, \bm{\dot{q}}) - U(\bm{q}).
 \end{align}
 The equations of motion are then given by \cite{modsim}:
 \begin{align}
-    \frac{d}{dt} \left( \nabla_{\dot{\bm{q}}} L \right) - \nabla_{\bm{q}} L = \bm{\tau}
+    \frac{d}{dt} \left( \nabla_{\dot{\bm{q}}} L \right) - \nabla_{\bm{q}} L = \bm{\tau},
 \end{align}
 where the $i$-th element of the vector $\bm{\tau}$ is the generalized force acting
-on the $i$-th generalized coordinate.
+on the $i$-th generalized coordinate. The generalized forces can be expressed as
 \begin{align}
-    \tau_i = \sum_{k=1}^N \frac{\partial \bm{r}_k}{\partial q_i} \cdot \bm{F}_k
+    \tau_i &= \sum_{k=1}^N \frac{\partial \bm{r}_k}{\partial q_i} \cdot \bm{F}_k
+    & i &= 1, 2, \ldots,
 \end{align}
 where $\bm{r}_k$ is the position of the $k$-th force and $\bm{F}_k$ is the force
 acting on this position. In cases where the kinetic energy is on the form

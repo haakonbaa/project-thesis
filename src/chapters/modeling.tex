@@ -11,15 +11,16 @@ blocks for developing advanced control algorithms discussed in later chapters.
 
 \section{Rigid Body Kinetics}
 
-Before modeling a general underwater vehicle manipulator system with multiple links, we will model
+Before modeling a general UVMS with multiple links, we will model
 a rigid body under water. As it turns out, the equations describing the motion
 of a system with multiple links is very much related to the dynamic properties
 of each individual link. This will become apparent when describing the mass
-and coriolis matrices, as well as forces acting on the general system.
-Consider a rigid body with mass $m$. Denote by $\bm{v}_{ng}^b$ the bodies translational
+and Coriolis matrices, as well as the forces acting on the general system.
+Consider a rigid body with mass $m$. Denote by $\bm{v}_{ng}^b$ the body's translational
 velocity, and by $\bm{\omega}_{ng}^b$ its angular velocity in the
 body-fixed frame. We can find the kinetic energy of the body by integrating the
-kinetic energy of every infinitesimal mass element.
+kinetic energy of every infinitesimal mass element. The kinetic energy
+of whole body is then given by
 \begin{equation}
     T = \frac{1}{2} \int \bm{v}_m^T \bm{v}_m\, dm,
 \end{equation}
@@ -36,7 +37,7 @@ mass. By defining $\bm{\nu} = \bm{\nu}_{bg}^b = \begin{bmatrix}(\bm{v}_{ng}^b)^T
         \I_{3\times 3} \int \,dm & - \int [\bm{r}_m]_\times \,dm \\
         - \int [\bm{r}_m]_\times \,dm & -\int [\bm{r}_m]_\times [\bm{r}_m]_\times \,dm
     \end{bmatrix}
-    \bm{\nu}\label{eq:T_body}
+    \bm{\nu}\label{eq:T_body}.
 \end{align}
 Since the twist is defined in the center of gravity, we have that
 \begin{align}
@@ -70,7 +71,7 @@ we can find the equations of motion for the rigid body as \cite{fossen2021}:
 }_{\bm{C}_{RB}^{CG}}\bm{\nu} = \bm{\tau}
     \label{eq:rigid_body_eom_cg}
 \end{align}
-where $\bm{\tau}$ is the generalized forces acting on the body. We call the matrices
+where $\bm{\tau}$ is the generalized forces and moments acting on the body. We call the matrices
 pre-multiplying $\dot{\bm{\nu}}$ and $\bm{\nu}$ for $\bm{M}_{RB}^{CG}$ and $\bm{C}_{RB}^{CG}$ respectively. In general one might want to consider the equations of motion
 about a different point than the center of gravity. The twist of the body is
 related to the twist in the new point by the matrix \cite{fossen2021}
@@ -121,7 +122,7 @@ point. The $\bm{M}_{RB}$ and $\bm{C}_{RB}$ matrices are given by \cite{fossen202
     \end{bmatrix}. \label{eq:crb}
 \end{align}
 \end{subequations}
-It can be shown that the coriolis matrix in \autoref{eq:crb} ca be equivalently
+It can be shown that the Coriolis matrix in \autoref{eq:crb} ca be equivalently
 written as \cite{sagatun1991}:
 \begin{align}
     \bm{C}_{RB}(\bm\nu) = \begin{bmatrix}
@@ -140,7 +141,7 @@ Where $\bm{M}_{ij}$ are the $3 \times 3$ submatrices of the $\bm{M}_{RB}$ matrix
 A comprehensive description of the kinematics and dynamics of articulated
 underwater robots can be found in \cite{schmidt2018}. Much of this section
 will be based on the work of \cite{from2014} and \cite{schmidt2018}, as well as an unpublished
-first draft of this paper. The following chapter will use notation adopted from
+first draft of \cite{schmidt2018}. The following chapter will use notation adopted from
 \cite{from2014}.
 
 \subsection{Forward Kinematics}
@@ -174,14 +175,14 @@ and
     \begin{cases}
         \bm{A}_i(\theta_i) \bm{A}_{i+1}(\theta_{i+1}) \cdots \bm{A}_{j-1}(\theta_{j-1}) & i \leq j \\
         \bm{0}_{4 \times 4} & i > j \\
-    \end{cases}
+    \end{cases}.
 \end{align}
 It can be shown that the transformation matrix $\bm{A}_{i}(\theta_i)$ can be
 expressed as \cite{murray2017}:
 \begin{align}
     \bm{A}_i(\theta_i) &= \bm{A}_i(0) \exp([\bm{a}_i]_{\wedge} \theta_i), \label{eq:expmap}
 \end{align}
-for some $\bm{a}_i \in \R^6$. Combining \autoref{eq:expmap} with \autoref{eq:body_twist_def}, the body twist
+for some $\bm{a}_i \in \R^6$. The body twist
 of link $i+1$ relative to the inertial frame $n$ can be expressed as
 \begin{subequations}
 \begin{align}
@@ -208,9 +209,9 @@ such that
     \bm{\nu}_{i} = \bm{J}_i(\bm{\theta}) \bm{\zeta}
 \end{align}
 where the body twist $\bm{\nu}$ and the joint velocities $\dot{\bm{\theta}}$ are
-collected in the vector $\bm{\zeta} \in \R^{6+(n-1)}$
+collected in the vector $\bm{\zeta}$:
 \begin{align}
-    \bm{\zeta} = \begin{bmatrix}\bm{\nu} \\ \dot{\bm{\theta}}\end{bmatrix}.
+    \bm{\zeta} = \begin{bmatrix}\bm{\nu} \\ \dot{\bm{\theta}}\end{bmatrix} \in \R^{6+(n-1)}.
 \end{align}
 From \autoref{eq:body_twist_recursive} we can see that the link Jacobians can be
 defined as
@@ -227,8 +228,8 @@ defined as
     \end{bmatrix}.
 \end{align}
 \end{subequations}
-The derivatives of the link jacobians are needed for control purposes and
-calculation of the coriolis matrix. By differentiating \autoref{eq:link_jacobian}
+The derivatives of the link Jacobians are needed for control purposes and
+calculation of the Coriolis matrix. By differentiating \autoref{eq:link_jacobian}
 with respect to time, we get
 \begin{subequations}
 \begin{align}
@@ -275,7 +276,7 @@ of the base link to the derivative of the Euler angles and is given by \cite{fos
         1 & \sin\phi \tan\theta & \cos \phi \tan \theta \\
         0 & \cos \phi & -\sin\phi \\
         0 & \sin \phi / \cos \theta & \cos \phi / \cos \theta
-    \end{bmatrix}
+    \end{bmatrix}.
 \end{align}
 
 \subsection{Dynamics}
@@ -283,20 +284,20 @@ of the base link to the derivative of the Euler angles and is given by \cite{fos
 For each link, $i$, defined in the previous subchapter, we associate the following
 properties: $\bm{M}_i \in \R^{6 \times 6}$ is the inertia matrix of the link,
 $\bm{J}_i \in \R^{6 \times (6+n)}$ is the link jacobian, $\bm{C}_i \in \R^{6 \times 6}$
-is the coriolis matrix, $\bm{D}_i \in \R^{6 \times 6}$ is the damping matrix and
-$\bm{g}_i \in \R^{6}$ is the gravitational forces and buoyancy forces and moments.
+is the Coriolis matrix, $\bm{D}_i \in \R^{6 \times 6}$ is the damping matrix and
+$\bm{g}_i \in \R^{6}$ is the gravitational forces and hydrostatic forces and moments.
 The damping matrix will be discussed in \autoref{sec:hydrodynamics}.
 $\bm{M}_i$ takes into account the added mass of the link
 \begin{align}
     \bm{M}_i &= \bm{M}_{RB,i} + \bm{M}_{A,i},
 \end{align}
 where $\bm{M}_{RB,i}$ is the rigid body inertia matrix of the link and $\bm{M}_{A,i}$
-is the added mass matrix of the link. As a result of the added mass, the coriolis
+is the added mass matrix of the link. As a result of the added mass, the Coriolis
 matrix is given by
 \begin{align}
     \bm{C}_i &= \bm{C}_{RB,i} + \bm{C}_{A,i}
 \end{align}
-where $\bm{C}_{RB,i}$ is the coriolis matrix of the rigid body and $\bm{C}_{A,i}$
+where $\bm{C}_{RB,i}$ is the Coriolis matrix of the rigid body and $\bm{C}_{A,i}$
 is a function of the added mass matrix. The added mass matrix and the damping matrix
 for each link is the topic of \autoref{sec:hydrodynamics}. The dynamics of the
 system described in the previous subchapter can be modeled as
@@ -310,20 +311,20 @@ system described in the previous subchapter can be modeled as
 \end{align}
 $\bm{M}(\bm{\theta}) \in \R^{(6+n)\times(6+n)}$  is the inertia matrix of the
 system, $\bm{C}(\bm{\theta}, \bm{\zeta}) \in \R^{(6+n)\times(6+n)}$ is the
-coriolis matrix, $\bm{D}(\bm{\theta}, \bm{\zeta}) \in \R^{(6+n)\times(6+n)}$ is
+Coriolis matrix, $\bm{D}(\bm{\theta}, \bm{\zeta}) \in \R^{(6+n)\times(6+n)}$ is
 the damping matrix, $\bm{g}(\bm{\xi}) \in \R^{6+n}$ is the gravitational forces
 and buoyancy forces and moments acting on the system, $\bm{\tau} \in \R^{n}$ is the generalized
 forces acting on the system as a result of the actuators,
 and $\bm{\tau}_{\mathrm{ext}} \in \R^{6+n}$ is the
 generalized external forces acting on the system. Let $\bm{J}_{i}(\bm{\theta})$
-be the link jacobians as defined in \autoref{eq:link_jacobian}.
+be the link Jacobians as defined in \autoref{eq:link_jacobian}.
 The inertia matrix
 can be expressed as
 \begin{align}
     \bm{M}(\bm{\theta}) &= \sum_{i=1}^{n} \bm{J}_{i}^T(\bm{\theta}) \bm{M}_i \bm{J}_{i}(\bm{\theta}).
 \end{align}
-Note that if the jacobians are full rank, the inertia matrix is positive definite.
-Furthermore, it is always symmetric. The coriolis matrix can be expressed as
+Note that if the Jacobians are full rank, the inertia matrix is positive definite.
+Furthermore, it is always symmetric. The Coriolis matrix can be expressed as
 \begin{align}
     \bm{C}(\bm{\theta}, \bm{\zeta}) &=
     \sum_{i=1}^{n} \bm{J}_{i}^T(\bm{\theta}) \bm{M}_i \dot{\bm{J}}_{i}(\bm{\theta},\dot{\bm{\theta}})
@@ -377,7 +378,7 @@ acting on a rigid body in a fluid.
 
 When a rigid body accelerates in a fluid, the fluid is accelerated as well. 
 This contributes to the total kinetic energy of the system \cite{antonelli2018}.
-To compensate for these effects, the spatial inertia matrix of the rigid body
+To account for these effects, the spatial inertia matrix of the rigid body
 can be augmented to approximate the total kinetic energy of the system: 
 \begin{equation}
     \bm{M} = \bm{M}_{RB} + \bm{M}_{A}.
@@ -453,7 +454,7 @@ states that the damping matrix can be approximated as
 \end{subequations}
 
 for completely submerged bodies. This will neglect coupling and dissipative effects.
-\citeauthor{mcmillan1995} shows that by using strip theory, the damping force and
+It has been shown that by using strip theory, the damping force and
 moment on a cylinder can be approximated by the follwing integrals \cite{mcmillan1995}:
 \begin{subequations}
     \label{eq:cylinder_damping}
